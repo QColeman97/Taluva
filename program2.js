@@ -755,7 +755,7 @@ function canvasApp(){
 						
 						console.log("(huts) Maxes: " + maxes);
 						console.log("(huts) Tied: " + tied);
-						
+
 						// One player of tied max temples and towers with max huts
 						if (tied.length === 1) {
 							mostPlayer = maxes.indexOf(1) + 1;
@@ -772,11 +772,13 @@ function canvasApp(){
 				}
 
 				if (mostPlayer > 0) {
+					drawPlayerWin(mostPlayer);
 					alert("Player " + mostPlayer + " Wins! They built the most buildings. All hail!");
 				} else {
+					drawPlayersWin(tied);
 					var alertString = "Player ";
 					for (var i = 0; i < tied.length - 1; i++) {
-						if (i < tied.length - 2) {
+						if (i === tied.length - 2) {
 							alertString += ((tied[i] + 1) + " ");
 						} else {
 							alertString += ((tied[i] + 1) + ", ");
@@ -958,6 +960,28 @@ function canvasApp(){
 		context.font = '30px sans-serif';
 		context.textBaseline = 'top';
 		context.fillText ("Player " + player + "Wins!!", 35, DECK_Y/6);
+	}
+
+	function drawPlayersWin(tied) {
+		context.shadowOffsetX=2;
+		context.shadowOffsetY=2;
+		context.shadowColor='gray';
+		context.shadowBlur=5;
+		
+		var playerString = "";
+		for (var i = 0; i < tied.length - 1; i++) {
+			if (i === tied.length - 2) {
+				playerString += ((tied[i] + 1) + " ");
+			} else {
+				playerString += ((tied[i] + 1) + ", ");
+			}
+		}
+		playerString += ("and " + tied[length-1]);
+
+		context.fillStyle = '#FFFFFF';
+		context.font = '30px sans-serif';
+		context.textBaseline = 'top';
+		context.fillText ("Players " + playerString + "Win!!", 35, DECK_Y/6);
 	}
 
 	function drawTileCounter() {
