@@ -49,7 +49,9 @@ const HUTS = 80;
 const TOWERS = 8;
 const TEMPLES = 12;
 
-const TILE_NUM = 48;
+//const TILE_NUM = 48;
+// testing
+const TILE_NUM = 5;
 const ROWS = 15;//9;
 const TILE_ROWS = ROWS - 1;
 const COLS = 13;//7;
@@ -320,22 +322,24 @@ function canvasApp(){
 		
 		drawBackground();
 		drawSidePanel();
+		
+ 		// Draw game board's placed hexagons
+		for (var i = 0; i < drawableBoardHexagons.length; i++) {
+			translateAndDrawHexState(
+				drawableBoardHexagons[i].row, drawableBoardHexagons[i].col, 
+				drawableBoardHexagons[i].level, drawableBoardHexagons[i].type, 
+				drawableBoardHexagons[i].rot, drawableBoardHexagons[i].player,
+				drawableBoardHexagons[i].huts, drawableBoardHexagons[i].towers,
+				drawableBoardHexagons[i].temples);
+		}
+
 		if (choosingPlayerNum) {
 			drawPlayerNumPrompt();
 			return;
 		} else if (gameOver) {
-			drawPlayerWin(currPlayer);
-			// Draw game board's placed hexagons
-			for (var i = 0; i < drawableBoardHexagons.length; i++) {
-				translateAndDrawHexState(
-					drawableBoardHexagons[i].row, drawableBoardHexagons[i].col, 
-					drawableBoardHexagons[i].level, drawableBoardHexagons[i].type, 
-					drawableBoardHexagons[i].rot, drawableBoardHexagons[i].player,
-					drawableBoardHexagons[i].huts, drawableBoardHexagons[i].towers,
-					drawableBoardHexagons[i].temples);
-			}
 			if (builtTwoOfThreeTypes()) {
 				// Early Victory!
+				drawPlayerWin(currPlayer);
 				alert("Player " + currPlayer + " Wins! Two of the three types of your buildings have all been built! Radical.");
 			} else if (onePlayerLeft) {
 				var lastPlayer = 0;
@@ -353,7 +357,434 @@ function canvasApp(){
 					lastPlayer = PlayerEnum.FOUR;
 					break;
 				}
+				drawPlayerWin(lastPlayer);
 				alert("Player " + lastPlayer + " Wins! He's the last player with any buildings left to build. Woah, sweet!");
+			} else if (outOfTiles) {
+				// Find who has max temples -> towers -> huts
+				var mostPlayer = 0;
+				var maxTemples = maxTowers = maxHuts = 0;
+				var maxes = [0,0,0,0];
+				var tied = [];
+
+				// Who has max temples
+				maxTemples = Math.max(PlacedTemplesEnum.ONE, Math.max(PlacedTemplesEnum.TWO, Math.max(PlacedTemplesEnum.THREE, PlacedTemplesEnum.FOUR)));
+				if (PlacedTemplesEnum.ONE === maxTemples) {
+					maxes[0] = 1;
+				}
+				if (PlacedTemplesEnum.TWO === maxTemples) {
+					maxes[1] = 1;
+				}
+				if (PlacedTemplesEnum.THREE === maxTemples) {
+					maxes[2] = 1;
+				}
+				if (PlacedTemplesEnum.FOUR === maxTemples) {
+					maxes[3] = 1;
+				}
+				for (var i = 0; i < 4; i++) {
+					if (maxes[i] === 1) {
+						tied.push(i+1);
+					}
+				}
+				console.log("(temples) Maxes: " + maxes);
+				console.log("(temples) Tied: " + tied);
+
+				if (tied.length > 1) {
+					// Who of tied has max towers
+					switch (tied.length) {
+					case 2:
+						var val1, val2;
+						for (var i = 0; i < tied.length; i++) {
+							if (i === 0) {
+								switch(tied[i]) {
+								case 1:
+									val1 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val1 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val1 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val1 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							} else {
+								switch(tied[i]) {
+								case 1:
+									val2 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val2 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val2 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val2 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							}
+						}
+						maxTowers = Math.max(val1, val2);
+						break;
+					case 3:
+						var val1, val2, val3;
+						for (var i = 0; i < tied.length; i++) {
+							if (i === 0) {
+								switch(tied[i]) {
+								case 1:
+									val1 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val1 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val1 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val1 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							} else if (i === 1) {
+								switch(tied[i]) {
+								case 1:
+									val2 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val2 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val2 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val2 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							} else {
+								switch(tied[i]) {
+								case 1:
+									val3 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val3 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val3 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val3 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							}
+						}
+						maxTowers = Math.max(val1, Math.max(val2, val3));
+						break;
+					case 4:
+						var val1, val2, val3, val4;
+						for (var i = 0; i < tied.length; i++) {
+							if (i === 0) {
+								switch(tied[i]) {
+								case 1:
+									val1 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val1 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val1 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val1 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							} else if (i === 1) {
+								switch(tied[i]) {
+								case 1:
+									val2 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val2 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val2 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val2 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							} else if (i === 2) {
+								switch(tied[i]) {
+								case 1:
+									val3 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val3 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val3 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val3 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							} else {
+								switch(tied[i]) {
+								case 1:
+									val4 = PlacedTowersEnum.ONE;
+									break;
+								case 2:
+									val4 = PlacedTowersEnum.TWO;
+									break;
+								case 3:
+									val4 = PlacedTowersEnum.THREE;
+									break;
+								case 4:
+									val4 = PlacedTowersEnum.FOUR;
+									break;
+								}
+							}
+						}
+						maxTowers = Math.max(val1, Math.max(val2, Math.max(val3, val4)));
+						break;
+					}
+					
+					maxes = [0,0,0,0];
+					tied = [];
+					if (PlacedTowersEnum.ONE === maxTowers) {
+						maxes[0] = 1;
+					}
+					if (PlacedTowersEnum.TWO === maxTowers) {
+						maxes[1] = 1;
+					}
+					if (PlacedTowersEnum.THREE === maxTowers) {
+						maxes[2] = 1;
+					}
+					if (PlacedTowersEnum.FOUR === maxTowers) {
+						maxes[3] = 1;
+					}
+					for (var i = 0; i < 4; i++) {
+						if (maxes[i] === 1) {
+							tied.push(i+1);
+						}
+					}
+
+					console.log("(towers) Maxes: " + maxes);
+					console.log("(towers) Tied: " + tied);
+
+					if (tied.length > 1) {
+						// Who of tied has max huts
+						switch (tied.length) {
+						case 2:
+							var val1, val2;
+							for (var i = 0; i < tied.length; i++) {
+								if (i === 0) {
+									switch(tied[i]) {
+									case 1:
+										val1 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val1 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val1 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val1 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								} else {
+									switch(tied[i]) {
+									case 1:
+										val2 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val2 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val2 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val2 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								}
+							}
+							maxHuts = Math.max(val1, val2);
+							break;
+						case 3:
+							var val1, val2, val3;
+							for (var i = 0; i < tied.length; i++) {
+								if (i === 0) {
+									switch(tied[i]) {
+									case 1:
+										val1 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val1 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val1 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val1 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								} else if (i === 1) {
+									switch(tied[i]) {
+									case 1:
+										val2 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val2 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val2 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val2 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								} else {
+									switch(tied[i]) {
+									case 1:
+										val3 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val3 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val3 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val3 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								}
+							}
+							maxHuts = Math.max(val1, Math.max(val2, val3));
+							break;
+						case 4:
+							var val1, val2, val3, val4;
+							for (var i = 0; i < tied.length; i++) {
+								if (i === 0) {
+									switch(tied[i]) {
+									case 1:
+										val1 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val1 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val1 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val1 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								} else if (i === 1) {
+									switch(tied[i]) {
+									case 1:
+										val2 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val2 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val2 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val2 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								} else if (i === 2) {
+									switch(tied[i]) {
+									case 1:
+										val3 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val3 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val3 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val3 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								} else {
+									switch(tied[i]) {
+									case 1:
+										val4 = PlacedHutsEnum.ONE;
+										break;
+									case 2:
+										val4 = PlacedHutsEnum.TWO;
+										break;
+									case 3:
+										val4 = PlacedHutsEnum.THREE;
+										break;
+									case 4:
+										val4 = PlacedHutsEnum.FOUR;
+										break;
+									}
+								}
+							}
+							maxHuts = Math.max(val1, Math.max(val2, Math.max(val3, val4)));
+							break;
+						}
+
+						maxes = [0,0,0,0];
+						tied = [];
+						if (PlacedHutsEnum.ONE === maxHuts) {
+							maxes[0] = 1;
+						}
+						if (PlacedHutsEnum.TWO === maxHuts) {
+							maxes[1] = 1;
+						}
+						if (PlacedHutsEnum.THREE === maxHuts) {
+							maxes[2] = 1;
+						}
+						if (PlacedHutsEnum.FOUR === maxHuts) {
+							maxes[3] = 1;
+						}
+						for (var i = 0; i < 4; i++) {
+							if (maxes[i] === 1) {
+								tied.push(i+1);
+							}
+						}
+						
+						console.log("(huts) Maxes: " + maxes);
+						console.log("(huts) Tied: " + tied);
+						
+						// One player of tied max temples and towers with max huts
+						if (tied.length === 1) {
+							mostPlayer = maxes.indexOf(1) + 1;
+						}
+
+					// One player of tied max temples with max towers
+					} else {
+						mostPlayer = maxes.indexOf(1) + 1;
+					}
+
+				// One player with max temples
+				} else {
+					mostPlayer = maxes.indexOf(1) + 1;
+				}
+
+				if (mostPlayer > 0) {
+					alert("Player " + mostPlayer + " Wins! They built the most buildings. All hail!");
+				} else {
+					var alertString = "Player ";
+					for (var i = 0; i < tied.length - 1; i++) {
+						if (i < tied.length - 2) {
+							alertString += ((tied[i] + 1) + " ");
+						} else {
+							alertString += ((tied[i] + 1) + ", ");
+						}
+					}
+					alertString += ("and " + tied[length-1] + " Win!! They all built equal buildings. Woah, chyah man!");
+					alert(alertString);
+				}
 			}
 			return;
 		}
@@ -378,21 +809,11 @@ function canvasApp(){
                         -1, true, 0, false, 0, 0, 0, 0);
                 }
 		    }
-		}*/
-
-        // Draw game board's placed hexagons
-		for (var i = 0; i < drawableBoardHexagons.length; i++) {
-			translateAndDrawHexState(
-				drawableBoardHexagons[i].row, drawableBoardHexagons[i].col, 
-				drawableBoardHexagons[i].level, drawableBoardHexagons[i].type, 
-				drawableBoardHexagons[i].rot, drawableBoardHexagons[i].player,
-				drawableBoardHexagons[i].huts, drawableBoardHexagons[i].towers,
-				drawableBoardHexagons[i].temples);
 		}
 
 		if (outOfTiles) {
 			return;
-		}
+		}*/
 
         // Draw the tri-hexagon tile deck
         drawDeck(DECK_X, DECK_Y, SIZE);
@@ -663,6 +1084,9 @@ function canvasApp(){
 	}
 
 	function drawDeck(centerX, centerY, SIZE) {
+		if (terrDistIndex === TILE_NUM)
+			return;
+
 		// draw top
 		drawHexagon(centerX, centerY - SIZE,  
 			terrainDist[terrDistIndex][0], false, 0, false, 0, 0, 0, 0);
@@ -1008,10 +1432,17 @@ function canvasApp(){
 			console.log("Clicked on deck");
 			holdingTile = true;
 
-			if (terrDistIndex <= 47)
+			/*if (terrDistIndex <= 47)
 				terrDistIndex++;
-			if (terrDistIndex === 48)
+			if (terrDistIndex === TILE_NUM)
+				outOfTiles = true;*/
+			// TESTING
+			//if (terrDistIndex <= 47)
+			terrDistIndex++;
+			/*if (terrDistIndex === TILE_NUM) {
 				outOfTiles = true;
+				gameOver = true;
+			}*/
 			remainingTiles = TILE_NUM - terrDistIndex;
 
 			console.log("Holding tile: " + holdingTile);
@@ -1440,6 +1871,12 @@ function canvasApp(){
 			} else {
 				currPlayer = PlayerEnum.ONE;
 			}*/
+
+
+			if (terrDistIndex === TILE_NUM) {
+				outOfTiles = true;
+				gameOver = true;
+			}
 
 			// SWITCH PLAYERS: (2-4 player game)
 			do {
@@ -2318,7 +2755,7 @@ function canvasApp(){
 	}
 
 	function isTileValid(tileRow, tileCol, centerHex, leftHex, rightHex, boardState) {
-		if (remainingTiles >= 47) { return true; }
+		if (remainingTiles >= (TILE_NUM-1)) { return true; }
 
 		var colMin, colMax, i, j, volcanoIndex;
 		var eruption = false;
