@@ -206,6 +206,25 @@ var remainingTowersEnum = {
 	FOUR: TOWERS/4
 };
 
+var PlacedHutsEnum = {
+	ONE: 0,
+	TWO: 0,
+	THREE: 0,
+	FOUR: 0
+};
+var PlacedTemplesEnum = {
+	ONE: 0,
+	TWO: 0,
+	THREE: 0,
+	FOUR: 0
+};
+var PlacedTowersEnum = {
+	ONE: 0,
+	TWO: 0,
+	THREE: 0,
+	FOUR: 0
+};
+
 // Launch app
 function bkgdMusicLoaded(e) {
 	canvasApp();
@@ -1161,6 +1180,20 @@ function canvasApp(){
 				clickedHex.huts++;
 				clickedHex.player = currPlayer;
 
+				switch(currPlayer) {
+				case PlayerEnum.ONE:
+					PlacedHutsEnum.ONE++;
+					break;
+				case PlayerEnum.TWO:
+					PlacedHutsEnum.TWO++;
+					break;
+				case PlayerEnum.THREE:
+					PlacedHutsEnum.THREE++;
+					break;
+				case PlayerEnum.FOUR:
+					PlacedHutsEnum.FOUR++;
+					break;
+				}
 				placedAtLeastOneBuilding = true;
 
 				if (builtTwoOfThreeTypes()) {
@@ -1227,7 +1260,21 @@ function canvasApp(){
 
 				clickedHex.towers++;
 				clickedHex.player = currPlayer;
-
+				
+				switch(currPlayer) {
+				case PlayerEnum.ONE:
+					PlacedTowersEnum.ONE++;
+					break;
+				case PlayerEnum.TWO:
+					PlacedTowersEnum.TWO++;
+					break;
+				case PlayerEnum.THREE:
+					PlacedTowersEnum.THREE++;
+					break;
+				case PlayerEnum.FOUR:
+					PlacedTowersEnum.FOUR++;
+					break;
+				}
 				placedAtLeastOneBuilding = true;
 
 				if (builtTwoOfThreeTypes()) {
@@ -1295,6 +1342,20 @@ function canvasApp(){
 				clickedHex.temples++;
 				clickedHex.player = currPlayer;
 
+				switch(currPlayer) {
+				case PlayerEnum.ONE:
+					PlacedTemplesEnum.ONE++;
+					break;
+				case PlayerEnum.TWO:
+					PlacedTemplesEnum.TWO++;
+					break;
+				case PlayerEnum.THREE:
+					PlacedTemplesEnum.THREE++;
+					break;
+				case PlayerEnum.FOUR:
+					PlacedTemplesEnum.FOUR++;
+					break;
+				}
 				placedAtLeastOneBuilding = true;
 
 				if (builtTwoOfThreeTypes()) {
@@ -1554,11 +1615,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.ONE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
 								builtHuts += RemainingHutsEnum.ONE;
 								RemainingHutsEnum.ONE = 0;
 							}
@@ -1572,11 +1635,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.TWO -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
 								builtHuts += RemainingHutsEnum.TWO;
 								RemainingHutsEnum.TWO = 0;
 							}
@@ -1590,11 +1655,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.THREE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += RemainingHutsEnum.THREE;
 								builtHuts += RemainingHutsEnum.THREE;
 								RemainingHutsEnum.THREE = 0;
 							}
@@ -1608,11 +1675,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.FOUR -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
 								builtHuts += RemainingHutsEnum.FOUR;
 								RemainingHutsEnum.FOUR = 0;
 							}
@@ -1642,11 +1711,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.ONE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
 								builtHuts += RemainingHutsEnum.ONE;
 								RemainingHutsEnum.ONE = 0;
 							}
@@ -1660,11 +1731,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.TWO -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
 								builtHuts += RemainingHutsEnum.TWO;
 								RemainingHutsEnum.TWO = 0;
 							}
@@ -1678,11 +1751,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.THREE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += RemainingHutsEnum.THREE;
 								builtHuts += RemainingHutsEnum.THREE;
 								RemainingHutsEnum.THREE = 0;
 							}
@@ -1696,11 +1771,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.FOUR -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
 								builtHuts += RemainingHutsEnum.FOUR;
 								RemainingHutsEnum.FOUR = 0;
 							}
@@ -1731,11 +1808,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.ONE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
 								builtHuts += RemainingHutsEnum.ONE;
 								RemainingHutsEnum.ONE = 0;
 							}
@@ -1749,11 +1828,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.TWO -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
 								builtHuts += RemainingHutsEnum.TWO;
 								RemainingHutsEnum.TWO = 0;
 							}
@@ -1767,11 +1848,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.THREE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += 
 								builtHuts += RemainingHutsEnum.THREE;
 								RemainingHutsEnum.THREE = 0;
 							}
@@ -1785,11 +1868,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.FOUR -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
 								builtHuts += RemainingHutsEnum.FOUR;
 								RemainingHutsEnum.FOUR = 0;
 							}
@@ -1820,11 +1905,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.ONE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
 								builtHuts += RemainingHutsEnum.ONE;
 								RemainingHutsEnum.ONE = 0;
 							}
@@ -1838,11 +1925,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.TWO -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
 								builtHuts += RemainingHutsEnum.TWO;
 								RemainingHutsEnum.TWO = 0;
 							}
@@ -1856,11 +1945,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.THREE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += RemainingHutsEnum.THREE;
 								builtHuts += RemainingHutsEnum.THREE;
 								RemainingHutsEnum.THREE = 0;
 							}
@@ -1874,11 +1965,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.FOUR -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
 								builtHuts += RemainingHutsEnum.FOUR;
 								RemainingHutsEnum.FOUR = 0;
 							}
@@ -1909,11 +2002,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.ONE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
 								builtHuts += RemainingHutsEnum.ONE;
 								RemainingHutsEnum.ONE = 0;
 							}
@@ -1927,11 +2022,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.TWO -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
 								builtHuts += RemainingHutsEnum.TWO;
 								RemainingHutsEnum.TWO = 0;
 							}
@@ -1945,11 +2042,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.THREE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += RemainingHutsEnum.THREE;
 								builtHuts += RemainingHutsEnum.THREE;
 								RemainingHutsEnum.THREE = 0;
 							}
@@ -1963,11 +2062,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.FOUR -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
 								builtHuts += RemainingHutsEnum.FOUR;
 								RemainingHutsEnum.FOUR = 0;
 							}
@@ -1998,11 +2099,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.ONE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
 								builtHuts += RemainingHutsEnum.ONE;
 								RemainingHutsEnum.ONE = 0;
 							}
@@ -2016,11 +2119,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.TWO -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
 								builtHuts += RemainingHutsEnum.TWO;
 								RemainingHutsEnum.TWO = 0;
 							}
@@ -2034,11 +2139,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.THREE -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += RemainingHutsEnum.THREE;
 								builtHuts += RemainingHutsEnum.THREE;
 								RemainingHutsEnum.THREE = 0;
 							}
@@ -2052,11 +2159,13 @@ function canvasApp(){
 								// If player has enough huts, levels, else rest:
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								builtHuts += boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 								RemainingHutsEnum.FOUR -= boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].level;
 							} else {
 								boardState[settlementRowCol[i][0]+rowOffset][settlementRowCol[i][1]+colOffset].huts = 
 									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
 								builtHuts += RemainingHutsEnum.FOUR;
 								RemainingHutsEnum.FOUR = 0;
 							}
