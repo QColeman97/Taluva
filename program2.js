@@ -165,6 +165,7 @@ for (var i = 0; i < ROWS; i++) {
 
 var choosingPlayerNum = true;
 var players = [];
+var playerIndex = 0;
 var terrDistIndex = 0;
 var remainingTiles = TILE_NUM - terrDistIndex;
 var outOfTiles = false;
@@ -186,29 +187,17 @@ var gameOver = false;
 var lastPlayerAlive = 0; 
 var onePlayerLeft = false;
 
-/*var remainingHutsEnum = {
+var remainingHutsEnum = {
 	ONE: HUTS/4,
 	TWO: HUTS/4,
 	THREE: HUTS/4,
 	FOUR: HUTS/4
-};*/
-var remainingHutsEnum = {
-	ONE: 1,
-	TWO: 1,
-	THREE: 1,
-	FOUR: 1
 };
-/*var remainingTemplesEnum = {
+var remainingTemplesEnum = {
 	ONE: TEMPLES/4,
 	TWO: TEMPLES/4,
 	THREE: TEMPLES/4,
 	FOUR: TEMPLES/4
-};*/
-var remainingTemplesEnum = {
-	ONE: 0,
-	TWO: 0,
-	THREE: 0,
-	FOUR: 0
 };
 var remainingTowersEnum = {
 	ONE: TOWERS/4,
@@ -699,8 +688,8 @@ function canvasApp(){
 	function drawHexagon(centerX, centerY, type, isPlaced, angle, isHeld, 
 		level, huts, towers, temples, player) {
 
-		console.log("context.globalAlpha: " + context.globalAlpha);
-		console.log("heldOverPlaced: " + heldOverPlaced);
+		//console.log("context.globalAlpha: " + context.globalAlpha);
+		//console.log("heldOverPlaced: " + heldOverPlaced);
 
 		var x = centerX;	
 		var y = centerY - SIZE;
@@ -1085,6 +1074,7 @@ function canvasApp(){
 				buildingTime = true;
 				heldOverPlaced = false;
 				
+				//REDO THIS FUNCTIONALITY - should be noPlacestobujild left 
 				// Player elimination if no buildings left
 				if (noBuildingsLeft()) {
 					// Eliminate player
@@ -1103,6 +1093,8 @@ function canvasApp(){
 						break;
 					}
 					players[playerIndex] = 0;
+					
+					// For elimination
 					var playerCount= 0;
 					for (var i = 0; i < players.length; i++) {
 						if (players[i] === 1) {
@@ -1230,7 +1222,7 @@ function canvasApp(){
 			//Check if valid hex at rows and cols chosen
 			if (clickedHex !== null && clickedHex.type !== SubtileTypeEnum.VOLCANO &&
 				(clickedHex.player === currPlayer || (clickedHex.huts === 0 && clickedHex.towers === 0 && 
-				clickedHex.temples === 0)) && clickedHex.level >= 1 &&  // FOR TESTING 
+				clickedHex.temples === 0)) && clickedHex.level >= 3 && 
 				isAdjacentToSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2)) && noTowerInSettlement()) {
 
 				clickedHex.towers++;
@@ -1324,7 +1316,7 @@ function canvasApp(){
 			// SWITCH PLAYERS: (2-4 player game)
 			do {
 				playerIndex++;
-				if (playerIndex === 4) {
+				if (playerIndex === players.length) {
 					playerIndex = 0;
 				}
 			} while (players[playerIndex] === 0);
@@ -1346,26 +1338,26 @@ function canvasApp(){
 
 			// SWITCH PLAYERS: (2-4 player game)
 			// CurrPlayer === 1
-			if (currPlayer === PlayerEnum.ONE) {
-				currPlayer = PlayerEnum.TWO;
+			//if (currPlayer === PlayerEnum.ONE) {
+			//	currPlayer = PlayerEnum.TWO;
 			// CurrPlayer === 2
-			} else if (currPlayer === PlayerEnum.TWO && numPlayers === 2) {
-				currPlayer = PlayerEnum.ONE;
+			//} else if (currPlayer === PlayerEnum.TWO && numPlayers === 2) {
+			//	currPlayer = PlayerEnum.ONE;
 			/*} else if (currPlayer === PlayerEnum.TWO && numPlayers === 2) {
 				currPlayer = PlayerEnum.ONE;*/
-			} else if (currPlayer === PlayerEnum.TWO && numPlayers > 2) {
-				currPlayer = PlayerEnum.THREE;
-			}
+			//} else if (currPlayer === PlayerEnum.TWO && numPlayers > 2) {
+			//	currPlayer = PlayerEnum.THREE;
+			//}
 			// CurrPlayer === 3
-			else if (currPlayer === PlayerEnum.THREE && numPlayers === 3) {
-				currPlayer = PlayerEnum.ONE;
-			} else if (currPlayer === PlayerEnum.THREE && numPlayers > 3) {
-				currPlayer = PlayerEnum.FOUR;
-			}
+			//else if (currPlayer === PlayerEnum.THREE && numPlayers === 3) {
+			//	currPlayer = PlayerEnum.ONE;
+			//} else if (currPlayer === PlayerEnum.THREE && numPlayers > 3) {
+			//	currPlayer = PlayerEnum.FOUR;
+			//}
 			// CurrPlayer === 4
-			else if (currPlayer === PlayerEnum.FOUR) {
-				currPlayer = PlayerEnum.ONE;
-			}
+			//else if (currPlayer === PlayerEnum.FOUR) {
+			//	currPlayer = PlayerEnum.ONE;
+			//}
 
 			buildingTime = false;
 			placedAtLeastOneBuilding = false;
@@ -2208,6 +2200,7 @@ function canvasApp(){
 			j = hexRowCols[hex][1];
 			if (boardState[i][j] === null) {
 				expansionCounter++;
+			// Else if boardState[i][j] !== null
 			} else {
 				if (underneathLevel === 0) {
 					eruptionCounter++;
@@ -2230,10 +2223,108 @@ function canvasApp(){
 
 		// CASE: ERUPTION
 		if (eruption) {
+			
+			var settlementOutsideCounter = 0;
+			var hexPlayer = -1;
+			// holds boolean values = if settlement continues outside
+			var hasOutsideSettlementsPerPlayer = [false, false, false, false];
+			var playersEffected = [0, 0, 0, 0];
+			for (var hex = 0; hex < 3; hex++) {
+				i = hexRowCols[hex][0];
+				j = hexRowCols[hex][1];
+
+				if (boardState[i][j].towers > 0 || boardState[i][j].temples > 0 || 
+					boardState[i][j].huts > 0) {
+					//check if there are neighboring buildings of same player based on position on tile
+
+					hexPlayer = boardState[i][j].player;
+					playersEffected[hexPlayer - 1] = 1;
+
+					//Probably put in own function
+					//func is tile covering whole settlement
+					//selectedSettlement = [];
+					//fillSelectedSettlement(i,j);
+					if (tileFlipped) {
+						switch(hex) {
+						case 0: // bottom hex
+							if ((boardState[i][j+1] !== null && (boardState[i][j+1].huts > 0 || boardState[i][j+1].temples > 0 || boardState[i][j+1].towers > 0)) ||
+								(boardState[i+1][j] !== null && (boardState[i+1][j].huts > 0 || boardState[i+1][j].temples > 0 || boardState[i+1][j].towers > 0)) ||
+								(boardState[i+1][j-1] !== null && (boardState[i+1][j-1].huts > 0 || boardState[i+1][j-1].temples > 0 || boardState[i+1][j-1].towers > 0)) ||
+								(boardState[i][j-1] !== null && (boardState[i][j-1].huts > 0 || boardState[i][j-1].temples > 0 || boardState[i][j-1].towers > 0))) {
+
+								hasOutsideSettlementsPerPlayer[hexPlayer-1] = true;		
+							}
+							break;
+						case 1: // top left hex
+							if ((boardState[i+1][j-1] !== null && (boardState[i+1][j-1].huts > 0 || boardState[i+1][j-1].temples > 0 || boardState[i+1][j-1].towers > 0)) ||
+								(boardState[i][j-1] !== null && (boardState[i][j-1].huts > 0 || boardState[i][j-1].temples > 0 || boardState[i][j-1].towers > 0)) ||
+								(boardState[i-1][j] !== null && (boardState[i-1][j].huts > 0 || boardState[i-1][j].temples > 0 || boardState[i-1][j].towers > 0)) ||
+								(boardState[i-1][j+1] !== null && (boardState[i-1][j+1].huts > 0 || boardState[i-1][j+1].temples > 0 || boardState[i-1][j+1].towers > 0))) {
+
+								hasOutsideSettlementsPerPlayer[hexPlayer-1] = true;		
+							}
+							break;
+						case 2: // top right hex
+							if ((boardState[i-1][j] !== null && (boardState[i-1][j].huts > 0 || boardState[i-1][j].temples > 0 || boardState[i-1][j].towers > 0)) ||
+								(boardState[i-1][j+1] !== null && (boardState[i-1][j+1].huts > 0 || boardState[i-1][j+1].temples > 0 || boardState[i-1][j+1].towers > 0)) ||
+								(boardState[i][j+1] !== null && (boardState[i][j+1].huts > 0 || boardState[i][j+1].temples > 0 || boardState[i][j+1].towers > 0)) || 
+								(boardState[i+1][j] !== null && (boardState[i+1][j].huts > 0 || boardState[i+1][j].temples > 0 || boardState[i+1][j].towers > 0))) {
+
+								hasOutsideSettlementsPerPlayer[hexPlayer-1] = true;		
+							}
+							break;
+						}
+					} else {
+						switch(hex) {
+						case 0: // top hex
+							if ((boardState[i][j-1] !== null && (boardState[i][j-1].huts > 0 || boardState[i][j-1].temples > 0 || boardState[i][j-1].towers > 0)) ||
+								(boardState[i-1][j] !== null && (boardState[i-1][j].huts > 0 || boardState[i-1][j].temples > 0 || boardState[i-1][j].towers > 0)) ||
+								(boardState[i-1][j+1] !== null && (boardState[i-1][j+1].huts > 0 || boardState[i-1][j+1].temples > 0 || boardState[i-1][j+1].towers > 0)) ||
+								(boardState[i][j+1] !== null && (boardState[i][j+1].huts > 0 || boardState[i][j+1].temples > 0 || boardState[i][j+1].towers > 0))) {
+
+								hasOutsideSettlementsPerPlayer[hexPlayer-1] = true;		
+							}
+							break;
+						case 1: // bottom left hex
+							if ((boardState[i-1][j] !== null && (boardState[i-1][j].huts > 0 || boardState[i-1][j].temples > 0 || boardState[i-1][j].towers > 0)) ||
+								(boardState[i][j-1] !== null && (boardState[i][j-1].huts > 0 || boardState[i][j-1].temples > 0 || boardState[i][j-1].towers > 0)) ||
+								(boardState[i+1][j-1] !== null && (boardState[i+1][j-1].huts > 0 || boardState[i+1][j-1].temples > 0 || boardState[i+1][j-1].towers)) > 0 ||
+								(boardState[i+1][j] !== null && (boardState[i+1][j].huts > 0 || boardState[i+1][j].temples > 0 || boardState[i+1][j].towers > 0))) {
+
+								hasOutsideSettlementsPerPlayer[hexPlayer-1] = true;		
+							}
+							break;
+						case 2: // bottom right hex
+							if ((boardState[i+1][j-1] !== null && (boardState[i+1][j-1].huts > 0 || boardState[i+1][j-1].temples > 0 || boardState[i+1][j-1].towers > 0)) ||
+								(boardState[i+1][j] !== null && (boardState[i+1][j].huts > 0 || boardState[i+1][j].temples > 0 || boardState[i+1][j].towers > 0)) ||
+								(boardState[i][j+1] !== null && (boardState[i][j+1].huts > 0 || boardState[i][j+1].temples > 0 || boardState[i][j+1].towers > 0)) ||
+								(boardState[i-1][j+1] !== null && (boardState[i-1][j+1].huts > 0 || boardState[i-1][j+1].temples > 0 || boardState[i-1][j+1].towers > 0))) {
+
+								hasOutsideSettlementsPerPlayer[hexPlayer-1] = true;		
+							}
+							break;
+						}
+					}
+				}
+			}
+			// case: covering entire settlement?
+			console.log("playersEffected = " + playersEffected);
+			console.log("hasOutsideSettlementsPerPlayer = " + hasOutsideSettlementsPerPlayer);
+			for (var i = 0; i < 4; i++) {
+				console.log("playersEffected[i] = " + playersEffected[i]);
+				console.log("hasOutsideSettlementsPerPlayer[i] = " + hasOutsideSettlementsPerPlayer[i]);
+				if (playersEffected[i] === 1 && hasOutsideSettlementsPerPlayer[i] === false) {
+					// Volcano covers whole player's settlement
+					alert("Eruption must not destroy an entire settlement.");
+					return false;
+				}
+			}
+
 			var angle = centerHex.rot;
 			for (var hex = 0; hex < 3; hex++) {
 				i = hexRowCols[hex][0];
 				j = hexRowCols[hex][1];
+
 				// case: new volcano not on volcano
 				if (boardState[i][j].type !== SubtileTypeEnum.VOLCANO &&
 					hex === volcanoIndex) {
@@ -2253,7 +2344,8 @@ function canvasApp(){
 					console.log("Case: covering temples or towers");
 					alert("Tile must not cover an already placed tower or temple.");
 					return false;
-				} else {
+				} 
+				else {
 					switch(hex) {
 					case 0:
 						centerHex.level = boardState[i][j].level + 1;
