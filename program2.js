@@ -1199,10 +1199,10 @@ function canvasApp(){
 				remainingTowersEnum.TWO--;
 				break;
 			case PlayerEnum.THREE:
-				remainingHutsEnum.THREE--;
+				remainingTowersEnum.THREE--;
 				break;
 			case PlayerEnum.FOUR:
-				remainingHutsEnum.FOUR--;
+				remainingTowersEnum.FOUR--;
 				break;
 			}
 			drawScreen();
@@ -1236,7 +1236,7 @@ function canvasApp(){
 				}
 			}
 			else {
-				alert("You cannot build a tower on a volcano, nor on the ocean, nor on your opponent's settlements. You also must build a tower on a level 3 space or higher, adjacent to a settlement containing no towers.");
+				alert("You cannot build a tower on a volcano, nor on the ocean, nor on your opponent's settlements. You also must build a tower on a level 3 space or higher, adjacent to a settlement containing no other towers.");
 				//holdingTower = true;
 				switch(currPlayer) {
 				case PlayerEnum.ONE:
@@ -1246,10 +1246,77 @@ function canvasApp(){
 					remainingTowersEnum.TWO++;
 					break;
 				case PlayerEnum.THREE:
-					remainingHutsEnum.THREE++;
+					remainingTowersEnum.THREE++;
 					break;
 				case PlayerEnum.FOUR:
-					remainingHutsEnum.FOUR++;
+					remainingTowersEnum.FOUR++;
+					break;
+				}
+			}
+			drawScreen();
+		// Clicked on temples
+		} else if ((!holdingTemple) && buildingTime && TEMPLE_X < mouseX && mouseX < (TEMPLE_X+64)
+			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
+			holdingTemple = true;
+			switch(currPlayer) {
+			case PlayerEnum.ONE:
+				remainingTemplesEnum.ONE--;
+				break;
+			case PlayerEnum.TWO:
+				remainingTemplesEnum.TWO--;
+				break;
+			case PlayerEnum.THREE:
+				remainingTemplesEnum.THREE--;
+				break;
+			case PlayerEnum.FOUR:
+				remainingTemplesEnum.FOUR--;
+				break;
+			}
+			drawScreen();
+		// Else if mouse is over board && holding Temple
+		} else if (holdingTemple && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
+			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			holdingTemple = false;
+			
+			// Draw a new tower at appropriate coordinates
+			var hexRow = getHexRow(mouseX, mouseY);
+			var hexCol = getHexCol(mouseX, mouseY, hexRow);
+			console.log("hex row clicked: " + hexRow + ", hex col clicked: " + hexCol);
+			
+			var clickedHex = boardState[hexRow][hexCol + Math.floor((ROWS-1)/2)];
+			selectedSettlement = [];
+			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
+			//Check if valid hex at rows and cols chosen
+			if (clickedHex !== null && clickedHex.type !== SubtileTypeEnum.VOLCANO &&
+				(clickedHex.player === currPlayer || (clickedHex.huts === 0 && clickedHex.towers === 0 && 
+				clickedHex.temples === 0)) && selectedSettlement.length >= 3 && // settlement has atleast 3 fields
+				isAdjacentToSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2)) && noTempleInSettlement()) {
+
+				clickedHex.temples++;
+				clickedHex.player = currPlayer;
+
+				placedAtLeastOneBuilding = true;
+
+				if (builtTwoOfThreeTypes()) {
+					// Early Victory!
+					gameOver = true;
+				}
+			}
+			else {
+				alert("You cannot build a temple on a volcano, nor on the ocean, nor on your opponent's settlements. You also must build a temple adjacent to a settlement atleast 3 fields large, containing no other temples.");
+				//holdingTemple = true;
+				switch(currPlayer) {
+				case PlayerEnum.ONE:
+					remainingTemplesEnum.ONE++;
+					break;
+				case PlayerEnum.TWO:
+					remainingTemplesEnum.TWO++;
+					break;
+				case PlayerEnum.THREE:
+					remainingTemplesEnum.THREE++;
+					break;
+				case PlayerEnum.FOUR:
+					remainingTemplesEnum.FOUR++;
 					break;
 				}
 			}
@@ -2126,6 +2193,15 @@ function canvasApp(){
 	function noTowerInSettlement() {
 		for (var i = 0; i < selectedSettlement.length; i++) {
 			if (selectedSettlement[i].towers > 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function noTempleInSettlement() {
+		for (var i = 0; i < selectedSettlement.length; i++) {
+			if (selectedSettlement[i].temples > 0) {
 				return false;
 			}
 		}
