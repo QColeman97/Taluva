@@ -1547,10 +1547,9 @@ function canvasApp(){
 				}
 				buildingTime = true;
 				heldOverPlaced = false;
-				
-				//REDO THIS FUNCTIONALITY - should be noPlacestobujild left 
-				// Player elimination if no buildings left
-				if (noBuildingsLeft()) {
+	
+				// Player elimination if no building options left
+				if (remainingTiles < (TILE_NUM-1) && noBuildingOptionsLeft()) {
 					// Eliminate player
 					switch(currPlayer) {
 					case PlayerEnum.ONE:
@@ -1980,36 +1979,394 @@ function canvasApp(){
 		return true;
 	}
 
-	function noBuildingsLeft() {
-		switch(currPlayer) {
-		case PlayerEnum.ONE:
-			if (remainingHutsEnum.ONE === 0 &&
-				remainingTowersEnum.ONE === 0 &&
-				remainingTemplesEnum.ONE === 0) {
-				return true;
+	function noBuildingOptionsLeft() {
+		// See if currPlayer has no places to build their buildings
+		var numHexagons = drawableBoardHexagons.length;
+		var cantBuildCounter = 0;
+		
+		//case: Huts
+		var cantBuildHutCounter = 0;
+		for (var i = 0; i < numHexagons; i++) {
+			// Not level 1, or other persons settlement (not free)
+			if (drawableBoardHexagons[i].level !== 1 || 
+				(drawableBoardHexagons[i].player !== currPlayer && 
+				(drawableBoardHexagons[i].huts > 0 || drawableBoardHexagons[i].towers > 0 ||
+				drawableBoardHexagons[i].temples > 0))) {
+				
+				cantBuildHutCounter++;
 			}
-			break;
-		case PlayerEnum.TWO:
-			if (remainingHutsEnum.TWO === 0 &&
-				remainingTowersEnum.TWO === 0 &&
-				remainingTemplesEnum.TWO === 0) {
-				return true;
+		}
+		if (cantBuildHutCounter === numHexagons)
+			cantBuildCounter++;
+
+		//case: Towers
+		var cantBuildTowerCounter = 0;
+		for (var i = 0; i < numHexagons; i++) {
+			// Not level >= 3, adjacent to settlement, no towers, or other persons settlement (not free)
+			if (drawableBoardHexagons[i].level < 3 || 
+				!isAdjacentToOwnSettlementWithNoTowers(drawableBoardHexagons[i]) ||
+				(drawableBoardHexagons[i].player !== currPlayer && 
+				(drawableBoardHexagons[i].huts > 0 || drawableBoardHexagons[i].towers > 0 ||
+				drawableBoardHexagons[i].temples > 0))) {
+				
+				cantBuildTowerCounter++;	
 			}
-			break;
-		case PlayerEnum.THREE:
-			if (remainingHutsEnum.THREE === 0 &&
-				remainingTowersEnum.THREE === 0 &&
-				remainingTemplesEnum.THREE === 0) {
-				return true;
+		}
+		if (cantBuildTowerCounter === numHexagons)
+			cantBuildCounter++;
+		
+		//case: Temples
+		var cantBuildTempleCounter = 0;
+		for (var i = 0; i < numHexagons; i++) {
+			// Not adjacent to settlement of >= 3, no temples, or other persons settlement (not free)
+			if (!isAdjacentToOwnThreeSizeSettlementWithNoTemples(drawableBoardHexagons[i]) ||
+				(drawableBoardHexagons[i].player !== currPlayer && 
+				(drawableBoardHexagons[i].huts > 0 || drawableBoardHexagons[i].towers > 0 ||
+				drawableBoardHexagons[i].temples > 0))) {
+				
+				cantBuildTempleCounter++;	
 			}
-			break;
-		case PlayerEnum.FOUR:
-			if (remainingHutsEnum.FOUR === 0 &&
-				remainingTowersEnum.FOUR === 0 &&
-				remainingTemplesEnum.FOUR === 0) {
-				return true;
+		}
+		if (cantBuildTempleCounter === numHexagons)
+			cantBuildCounter++;
+
+		//case: Expansion
+		var cantExpandCounter = 0;
+		for (var i = 0; i < numHexagons; i++) {
+			// Not free space, or free space but not adjacent to own settlement OR other free spaces
+			if ((drawableBoardHexagons[i].player !== currPlayer && 
+				(drawableBoardHexagons[i].huts > 0 || drawableBoardHexagons[i].towers > 0 ||
+				drawableBoardHexagons[i].temples > 0)) ||
+				// Now assume is a free space
+				!isAdjacentToOwnSettlementOrFreeSpaces(drawableBoardHexagons[i])) {
+				
+				cantExpandCounter++;	
 			}
-			break;
+		}
+		if (cantExpandCounter === numHexagons)
+			cantBuildCounter++;
+		
+		if (cantBuildCounter === 4)
+			return true;
+
+		return false;
+	}
+
+	function isAdjacentToOwnSettlementWithNoTowers(hexState) {
+		// Check if adjacent hex's are occupied by your builings (settlement)
+		var stateRow = hexState.row;
+		var stateCol = hexState.col + Math.floor((ROWS-1)/2);
+		var settlementCounter = 0;
+		var noTowerCounter = 0;
+
+		try {
+		if (boardState[stateRow-1][stateCol].player === currPlayer && 
+			(boardState[stateRow-1][stateCol].huts > 0 || 
+			boardState[stateRow-1][stateCol].towers > 0 ||
+			boardState[stateRow-1][stateCol].temples > 0)) {
+			
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow-1, stateCol);
+			if (noTowerInSettlement())
+				noTowerCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow-1][stateCol+1].player === currPlayer && 
+			(boardState[stateRow-1][stateCol+1].huts > 0 || 
+			boardState[stateRow-1][stateCol+1].towers > 0 ||
+			boardState[stateRow-1][stateCol+1].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow-1, stateCol+1);
+			if (noTowerInSettlement())
+				noTowerCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow][stateCol+1].player === currPlayer && 
+			(boardState[stateRow][stateCol+1].huts > 0 || 
+			boardState[stateRow][stateCol+1].towers > 0 ||
+			boardState[stateRow][stateCol+1].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow1, stateCol+1);
+			if (noTowerInSettlement())
+				noTowerCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow+1][stateCol].player === currPlayer && 
+			(boardState[stateRow+1][stateCol].huts > 0 || 
+			boardState[stateRow+1][stateCol].towers > 0 ||
+			boardState[stateRow+1][stateCol].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow+1, stateCol);
+			if (noTowerInSettlement())
+				noTowerCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow+1][stateCol-1].player === currPlayer && 
+			(boardState[stateRow+1][stateCol-1].huts > 0 || 
+			boardState[stateRow+1][stateCol-1].towers > 0 ||
+			boardState[stateRow+1][stateCol-1].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow+1, stateCol-1);
+			if (noTowerInSettlement())
+				noTowerCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow][stateCol-1].player === currPlayer && 
+			(boardState[stateRow][stateCol-1].huts > 0 || 
+			boardState[stateRow][stateCol-1].towers > 0 ||
+			boardState[stateRow][stateCol-1].temples > 0)) {
+			
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow, stateCol-1);
+			if (noTowerInSettlement())
+				noTowerCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		if (settlementCounter === 0 || (settlementCounter !== noTowerCounter))
+			return false;
+		return true;
+	}
+
+	function isAdjacentToOwnThreeSizeSettlementWithNoTemples(hexState) {
+		// Check if adjacent hex's are occupied by your buildings (settlement)
+		var stateRow = hexState.row;
+		var stateCol = hexState.col + Math.floor((ROWS-1)/2);
+		var settlementCounter = 0;
+		var noTempleAndBigEnoughCounter = 0;
+
+		try {
+		if (boardState[stateRow-1][stateCol].player === currPlayer && 
+			(boardState[stateRow-1][stateCol].huts > 0 || 
+			boardState[stateRow-1][stateCol].towers > 0 ||
+			boardState[stateRow-1][stateCol].temples > 0)) {
+			
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow-1, stateCol);
+			if (noTempleInSettlement() && selectedSettlement.length >= 3)
+				noTempleAndBigEnoughCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow-1][stateCol+1].player === currPlayer && 
+			(boardState[stateRow-1][stateCol+1].huts > 0 || 
+			boardState[stateRow-1][stateCol+1].towers > 0 ||
+			boardState[stateRow-1][stateCol+1].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow-1, stateCol+1);
+			if (noTempleInSettlement() && selectedSettlement.length >= 3)
+				noTempleAndBigEnoughCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow][stateCol+1].player === currPlayer && 
+			(boardState[stateRow][stateCol+1].huts > 0 || 
+			boardState[stateRow][stateCol+1].towers > 0 ||
+			boardState[stateRow][stateCol+1].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow1, stateCol+1);
+			if (noTempleInSettlement() && selectedSettlement.length >= 3)
+				noTempleAndBigEnoughCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow+1][stateCol].player === currPlayer && 
+			(boardState[stateRow+1][stateCol].huts > 0 || 
+			boardState[stateRow+1][stateCol].towers > 0 ||
+			boardState[stateRow+1][stateCol].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow+1, stateCol);
+			if (noTempleInSettlement() && selectedSettlement.length >= 3)
+				noTempleAndBigEnoughCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow+1][stateCol-1].player === currPlayer && 
+			(boardState[stateRow+1][stateCol-1].huts > 0 || 
+			boardState[stateRow+1][stateCol-1].towers > 0 ||
+			boardState[stateRow+1][stateCol-1].temples > 0)) {
+
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow+1, stateCol-1);
+			if (noTempleInSettlement() && selectedSettlement.length >= 3)
+				noTempleAndBigEnoughCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		try {
+		if (boardState[stateRow][stateCol-1].player === currPlayer && 
+			(boardState[stateRow][stateCol-1].huts > 0 || 
+			boardState[stateRow][stateCol-1].towers > 0 ||
+			boardState[stateRow][stateCol-1].temples > 0)) {
+			
+			settlementCounter++;
+			selectedSettlement = [];
+			fillSelectedSettlement(stateRow, stateCol-1);
+			if (noTempleInSettlement() && selectedSettlement.length >= 3)
+				noTempleAndBigEnoughCounter++;
+		}
+		} catch (e) {
+			console.log(e);
+		}
+
+		if (settlementCounter === 0 || (settlementCounter !== noTempleAndBigEnoughCounter))
+			return false;
+		return true;
+	}
+
+	function isAdjacentToOwnSettlementOrFreeSpaces(hexState) {
+		// Check if any adjacent hex's are my settlement or a free space
+		var stateRow = hexState.row;
+		var stateCol = hexState.col + Math.floor((ROWS-1)/2);
+
+		try {
+		if ((boardState[stateRow-1][stateCol].player === currPlayer && 
+			(boardState[stateRow-1][stateCol].huts > 0 || 
+			boardState[stateRow-1][stateCol].towers > 0 ||
+			boardState[stateRow-1][stateCol].temples > 0)) ||
+			(boardState[stateRow-1][stateCol].huts === 0 && 
+			boardState[stateRow-1][stateCol].towers === 0 &&
+			boardState[stateRow-1][stateCol].temples === 0 &&
+			boardState[stateRow-1][stateCol].type !== SubtileTypeEnum.VOLCANO)) {
+			
+			return true;
+		}
+		} catch(e) {
+			console.log(e);
+		}
+
+		try {
+		if ((boardState[stateRow-1][stateCol+1].player === currPlayer && 
+			(boardState[stateRow-1][stateCol+1].huts > 0 || 
+			boardState[stateRow-1][stateCol+1].towers > 0 ||
+			boardState[stateRow-1][stateCol+1].temples > 0)) ||
+			(boardState[stateRow-1][stateCol+1].huts === 0 && 
+			boardState[stateRow-1][stateCol+1].towers === 0 &&
+			boardState[stateRow-1][stateCol+1].temples === 0 &&
+			boardState[stateRow-1][stateCol+1].type !== SubtileTypeEnum.VOLCANO)) {
+
+			return true;
+		}
+		} catch(e) {
+			console.log(e);
+		}
+
+		try {
+		if ((boardState[stateRow][stateCol+1].player === currPlayer && 
+			(boardState[stateRow][stateCol+1].huts > 0 || 
+			boardState[stateRow][stateCol+1].towers > 0 ||
+			boardState[stateRow][stateCol+1].temples > 0)) ||
+			(boardState[stateRow][stateCol+1].huts === 0 && 
+			boardState[stateRow][stateCol+1].towers === 0 &&
+			boardState[stateRow][stateCol+1].temples === 0 &&
+			boardState[stateRow][stateCol+1].type !== SubtileTypeEnum.VOLCANO)) {
+			
+			return true;		
+		}
+		} catch(e) {
+			console.log(e);
+		}
+
+		try {
+		if ((boardState[stateRow+1][stateCol].player === currPlayer && 
+			(boardState[stateRow+1][stateCol].huts > 0 || 
+			boardState[stateRow+1][stateCol].towers > 0 ||
+			boardState[stateRow+1][stateCol].temples > 0)) ||
+			(boardState[stateRow+1][stateCol].huts === 0 && 
+			boardState[stateRow+1][stateCol].towers === 0 &&
+			boardState[stateRow+1][stateCol].temples === 0 &&
+			boardState[stateRow+1][stateCol].type !== SubtileTypeEnum.VOLCANO)) {
+			
+			return true;	
+		}
+		} catch(e) {
+			console.log(e);
+		}
+
+		try {
+		if ((boardState[stateRow+1][stateCol-1].player === currPlayer && 
+			(boardState[stateRow+1][stateCol-1].huts > 0 || 
+			boardState[stateRow+1][stateCol-1].towers > 0 ||
+			boardState[stateRow+1][stateCol-1].temples > 0)) ||
+			(boardState[stateRow+1][stateCol-1].huts === 0 && 
+			boardState[stateRow+1][stateCol-1].towers === 0 &&
+			boardState[stateRow+1][stateCol-1].temples === 0 &&
+			boardState[stateRow+1][stateCol-1].type !== SubtileTypeEnum.VOLCANO)) {
+			
+			return true;		
+		}
+		} catch(e) {
+			console.log(e);
+		}
+		
+		try {
+		if ((boardState[stateRow][stateCol-1].player === currPlayer && 
+			(boardState[stateRow][stateCol-1].huts > 0 || 
+			boardState[stateRow][stateCol-1].towers > 0 ||
+			boardState[stateRow][stateCol-1].temples > 0)) ||
+			(boardState[stateRow][stateCol-1].huts === 0 && 
+			boardState[stateRow][stateCol-1].towers === 0 &&
+			boardState[stateRow][stateCol-1].temples === 0 &&
+			boardState[stateRow][stateCol-1].type !== SubtileTypeEnum.VOLCANO)) {
+
+			return true;
+		}
+		} catch(e) {
+			console.log(e);
 		}
 		return false;
 	}
