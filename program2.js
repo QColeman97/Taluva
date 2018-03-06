@@ -49,9 +49,9 @@ const HUTS = 80;
 const TOWERS = 8;
 const TEMPLES = 12;
 
-//const TILE_NUM = 48;
+const TILE_NUM = 48;
 // testing
-const TILE_NUM = 5;
+//const TILE_NUM = 5;
 const ROWS = 15;//9;
 const TILE_ROWS = ROWS - 1;
 const COLS = 13;//7;
@@ -80,6 +80,9 @@ const EXPAND_BTN_X = 0.5 * WIDTH;
 const EXPAND_BTN_Y = 12 * SIZE;
 const DONE_BTN_X = 0.5 * WIDTH;
 const DONE_BTN_Y = 16 * SIZE;
+// TALUVA Title constants
+const TITLE_X = 0.1 * WIDTH;
+const TITLE_Y = BOARD_HEIGHT - (3*SIZE);
 
 // https://boardgamegeek.com/thread/184290/terrain-distribution
 // [[top, left, right]...]
@@ -174,8 +177,11 @@ var outOfTiles = false;
 var holdingTile = false;
 var heldOverPlaced = false;
 var holdingHut = false;
+var buildingHuts = false;
 var holdingTower = false;
+var buildingTowers = false;
 var holdingTemple = false;
+var buildingTemples = false;
 var tileAngle = 0;
 var tileFlipped = false;
 var firstDraw = true;
@@ -183,31 +189,32 @@ var currPlayer = PlayerEnum.ONE;
 var buildingTime = false;
 var placedAtLeastOneBuilding = false;
 var pickingSettlement = false;
+var expanding = false;
 var pickingAdjacentTerrainType = false;
 
 var gameOver = false;
 var lastPlayerAlive = 0; 
 var onePlayerLeft = false;
 
-/*var remainingHutsEnum = {
+/*var RemainingHutsEnum = {
 	ONE: HUTS/4,
 	TWO: HUTS/4,
 	THREE: HUTS/4,
 	FOUR: HUTS/4
 };*/
-var remainingHutsEnum = {
+var RemainingHutsEnum = {
 	ONE: HUTS/4,
-	TWO: 0,
+	TWO: HUTS/8,
 	THREE: HUTS/4,
 	FOUR: HUTS/4
 };
-var remainingTemplesEnum = {
+var RemainingTemplesEnum = {
 	ONE: TEMPLES/4,
 	TWO: TEMPLES/4,
 	THREE: TEMPLES/4,
 	FOUR: TEMPLES/4
 };
-var remainingTowersEnum = {
+var RemainingTowersEnum = {
 	ONE: TOWERS/4,
 	TWO: TOWERS/4,
 	THREE: TOWERS/4,
@@ -328,7 +335,27 @@ function canvasApp(){
 		
 		drawBackground();
 		drawSidePanel();
+		drawTitle();
 		
+		// Optional - draw gameboard's hexgrid
+		for (row = 0; row < ROWS; row++) {
+		    for (col = 0; col < COLS; col++) {
+                if (row % 2 === 0) {
+                    // even row
+                    drawHexagon(
+                        BOARD_X + (WIDTH * col), 
+                        BOARD_Y + (SIZE * (3/2) * row), 
+                        -1, true, 0, false, 0, 0, 0, 0);
+                } else if (col < COLS-1) {
+                    // odd row - do not draw 7th column
+                    drawHexagon(
+                        BOARD_X + (WIDTH * col) + (WIDTH / 2), 
+                        BOARD_Y + (SIZE * (3/2) * row), 
+                        -1, true, 0, false, 0, 0, 0, 0);
+                }
+		    }
+		}
+
  		// Draw game board's placed hexagons
 		for (var i = 0; i < drawableBoardHexagons.length; i++) {
 			translateAndDrawHexState(
@@ -790,7 +817,7 @@ function canvasApp(){
 							alertString += ((tied[i] + 1) + ", ");
 						}
 					}
-					alertString += ("and " + tied[length-1] + " Win!! They all built equal buildings. Woah, chyah man!");
+					alertString += ("and " + tied[length-1] + " Win!! They all built equal buildings. Woah, chyah my fellow legions!");
 					alert(alertString);
 				}
 			}
@@ -799,29 +826,6 @@ function canvasApp(){
 		drawPlayerTurn(currPlayer);
 		drawTileCounter();
 		firstDraw = false;
-
-		// Optional - draw gameboard's hexgrid
-		/*for (row = 0; row < ROWS; row++) {
-		    for (col = 0; col < COLS; col++) {
-                if (row % 2 === 0) {
-                    // even row
-                    drawHexagon(
-                        BOARD_X + (WIDTH * col), 
-                        BOARD_Y + (SIZE * (3/2) * row), 
-                        -1, true, 0, false, 0, 0, 0, 0);
-                } else if (col < COLS-1) {
-                    // odd row - do not draw 7th column
-                    drawHexagon(
-                        BOARD_X + (WIDTH * col) + (WIDTH / 2), 
-                        BOARD_Y + (SIZE * (3/2) * row), 
-                        -1, true, 0, false, 0, 0, 0, 0);
-                }
-		    }
-		}
-
-		if (outOfTiles) {
-			return;
-		}*/
 
         // Draw the tri-hexagon tile deck
         drawDeck(DECK_X, DECK_Y, SIZE);
@@ -883,6 +887,26 @@ function canvasApp(){
        
         context.fillStyle = 'rgb(200, 175, 150)';
 		context.fillRect(0, 0, PANEL_WIDTH, BOARD_HEIGHT);
+	}
+
+	function drawTitle() {
+		context.shadowOffsetX=6;
+		context.shadowOffsetY=6;
+		context.shadowColor='rgb(75, 25, 25)';
+		context.shadowBlur=20;
+		context.fillStyle = 'brown';
+
+		context.font = '25px sans-serif';
+		context.textBaseline = 'top';
+		if (gameOver) {
+			context.fillText ("It's (no longer)", TITLE_X + (WIDTH/2), TITLE_Y - (2*SIZE/3));
+		} else {
+			context.fillText ("It's", TITLE_X + WIDTH + 20, TITLE_Y - (2*SIZE/3));
+		}
+		context.font = '65px sans-serif';
+		context.fillText ("TALUVA", TITLE_X, TITLE_Y);
+		context.font = '30px sans-serif';
+		context.fillText ("Time", TITLE_X + WIDTH, TITLE_Y + (3*SIZE/2));
 	}
 
 	function drawPlayerNumPrompt() {
@@ -965,7 +989,7 @@ function canvasApp(){
 
 		context.font = '30px sans-serif';
 		context.textBaseline = 'top';
-		context.fillText ("Player " + player + "Wins!!", 35, DECK_Y/6);
+		context.fillText ("Player " + player + " Wins!!", 34, DECK_Y/6);
 	}
 
 	function drawPlayersWin(tied) {
@@ -1014,27 +1038,27 @@ function canvasApp(){
 		switch(currPlayer) {
 		case PlayerEnum.ONE:
 			context.fillStyle = 'red';
-			context.fillText (remainingHutsEnum.ONE, HUT_X + 16, HTT_Y - 30);
-			context.fillText (remainingTemplesEnum.ONE, TEMPLE_X + 24, HTT_Y - 30);
-			context.fillText (remainingTowersEnum.ONE, TOWER_X + 24, HTT_Y - 30);
+			context.fillText (RemainingHutsEnum.ONE, HUT_X + 16, HTT_Y - 30);
+			context.fillText (RemainingTemplesEnum.ONE, TEMPLE_X + 24, HTT_Y - 30);
+			context.fillText (RemainingTowersEnum.ONE, TOWER_X + 24, HTT_Y - 30);
 			break;
 		case PlayerEnum.TWO:
 			context.fillStyle = 'yellow';
-			context.fillText (remainingHutsEnum.TWO, HUT_X + 16, HTT_Y - 30);
-			context.fillText (remainingTemplesEnum.TWO, TEMPLE_X + 24, HTT_Y - 30);
-			context.fillText (remainingTowersEnum.TWO, TOWER_X + 24, HTT_Y - 30);
+			context.fillText (RemainingHutsEnum.TWO, HUT_X + 16, HTT_Y - 30);
+			context.fillText (RemainingTemplesEnum.TWO, TEMPLE_X + 24, HTT_Y - 30);
+			context.fillText (RemainingTowersEnum.TWO, TOWER_X + 24, HTT_Y - 30);
 			break;
 		case PlayerEnum.THREE:
 			context.fillStyle = 'green';
-			context.fillText (remainingHutsEnum.THREE, HUT_X + 16, HTT_Y - 30);
-			context.fillText (remainingTemplesEnum.THREE, TEMPLE_X + 24, HTT_Y - 30);
-			context.fillText (remainingTowersEnum.THREE, TOWER_X + 24, HTT_Y - 30);
+			context.fillText (RemainingHutsEnum.THREE, HUT_X + 16, HTT_Y - 30);
+			context.fillText (RemainingTemplesEnum.THREE, TEMPLE_X + 24, HTT_Y - 30);
+			context.fillText (RemainingTowersEnum.THREE, TOWER_X + 24, HTT_Y - 30);
 			break;
 		case PlayerEnum.FOUR:
 			context.fillStyle = 'blue';
-			context.fillText (remainingHutsEnum.FOUR, HUT_X + 16, HTT_Y - 30);
-			context.fillText (remainingTemplesEnum.FOUR, TEMPLE_X + 24, HTT_Y - 30);
-			context.fillText (remainingTowersEnum.FOUR, TOWER_X + 24, HTT_Y - 30);
+			context.fillText (RemainingHutsEnum.FOUR, HUT_X + 16, HTT_Y - 30);
+			context.fillText (RemainingTemplesEnum.FOUR, TEMPLE_X + 24, HTT_Y - 30);
+			context.fillText (RemainingTowersEnum.FOUR, TOWER_X + 24, HTT_Y - 30);
 			break;
 		default:
 		}
@@ -1411,19 +1435,19 @@ function canvasApp(){
 	}
 
 	function onMouseClick(e) {
-		// Choosing number of players (1)
+		// Choosing number of players: 1
 		if (choosingPlayerNum && PANEL_WIDTH/9 < mouseX && mouseX < ((PANEL_WIDTH/9) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
 			choosingPlayerNum = false;
 			console.log("Clicked P1");
-			alert("That was a trick button. Starting 2 player game...");
+			alert("Psyche! Starting a 2 player Taluva game... (1 player functionality is yet to be implemented)");
 			players = new Array(2);
 			for (var i = 0; i < 2; i++) {
 				players[i] = 1;
 			}
 			drawScreen();
 		}
-		// Choosing number of players (2)
+		// Choosing number of players: 2
 		else if (choosingPlayerNum && PANEL_WIDTH/3 < mouseX && mouseX < ((PANEL_WIDTH/3) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
 			choosingPlayerNum = false;
@@ -1434,7 +1458,7 @@ function canvasApp(){
 			}
 			drawScreen();
 		}
-		// Choosing number of players (3)
+		// Choosing number of players: 3
 		else if (choosingPlayerNum && (5*PANEL_WIDTH/9) < mouseX && mouseX < ((5*PANEL_WIDTH/9) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
 			choosingPlayerNum = false;
@@ -1445,7 +1469,7 @@ function canvasApp(){
 			}
 			drawScreen();
 		}
-		// Choosing number of players (4)
+		// Choosing number of players: 4
 		else if (choosingPlayerNum && (7*PANEL_WIDTH/9) < mouseX && mouseX < ((7*PANEL_WIDTH/9) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
 			choosingPlayerNum = false;
@@ -1610,31 +1634,31 @@ function canvasApp(){
 			holdingHut = true;
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
-				if (remainingHutsEnum.ONE == 0) {
+				if (RemainingHutsEnum.ONE == 0) {
 					holdingHut = false;
 				} else {
-					remainingHutsEnum.ONE--;
+					RemainingHutsEnum.ONE--;
 				}
 				break;
 			case PlayerEnum.TWO:
-				if (remainingHutsEnum.TWO == 0) {
+				if (RemainingHutsEnum.TWO == 0) {
 					holdingHut = false;
 				} else {
-					remainingHutsEnum.TWO--;
+					RemainingHutsEnum.TWO--;
 				}
 				break;
 			case PlayerEnum.THREE:
-				if (remainingHutsEnum.THREE == 0) {
+				if (RemainingHutsEnum.THREE == 0) {
 					holdingHut = false;
 				} else {
-					remainingHutsEnum.THREE--;
+					RemainingHutsEnum.THREE--;
 				}
 				break;
 			case PlayerEnum.FOUR:
-				if (remainingHutsEnum.FOUR == 0) {
+				if (RemainingHutsEnum.FOUR == 0) {
 					holdingHut = false;
 				} else {
-					remainingHutsEnum.FOUR--;
+					RemainingHutsEnum.FOUR--;
 				}
 				break;
 			}
@@ -1682,16 +1706,16 @@ function canvasApp(){
 				//holdingHut = true;
 				switch(currPlayer) {
 				case PlayerEnum.ONE:
-					remainingHutsEnum.ONE++;
+					RemainingHutsEnum.ONE++;
 					break;
 				case PlayerEnum.TWO:
-					remainingHutsEnum.TWO++;
+					RemainingHutsEnum.TWO++;
 					break;
 				case PlayerEnum.THREE:
-					remainingHutsEnum.THREE++;
+					RemainingHutsEnum.THREE++;
 					break;
 				case PlayerEnum.FOUR:
-					remainingHutsEnum.FOUR++;
+					RemainingHutsEnum.FOUR++;
 					break;
 				}
 			}
@@ -1702,31 +1726,31 @@ function canvasApp(){
 			holdingTower = true;
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
-				if (remainingTowersEnum.ONE == 0) {
+				if (RemainingTowersEnum.ONE == 0) {
 					holdingTower = false;
 				} else {
-					remainingTowersEnum.ONE--;
+					RemainingTowersEnum.ONE--;
 				}
 				break;
 			case PlayerEnum.TWO:
-				if (remainingTowersEnum.TWO == 0) {
+				if (RemainingTowersEnum.TWO == 0) {
 					holdingTower = false;
 				} else {
-					remainingTowersEnum.TWO--;
+					RemainingTowersEnum.TWO--;
 				}
 				break;
 			case PlayerEnum.THREE:
-				if (remainingTowersEnum.THREE == 0) {
+				if (RemainingTowersEnum.THREE == 0) {
 					holdingTower = false;
 				} else {
-					remainingTowersEnum.THREE--;
+					RemainingTowersEnum.THREE--;
 				}
 				break;
 			case PlayerEnum.FOUR:
-				if (remainingTowersEnum.FOUR == 0) {
+				if (RemainingTowersEnum.FOUR == 0) {
 					holdingTower = false;
 				} else {
-					remainingTowersEnum.FOUR--;
+					RemainingTowersEnum.FOUR--;
 				}
 				break;
 			}
@@ -1779,16 +1803,16 @@ function canvasApp(){
 				//holdingTower = true;
 				switch(currPlayer) {
 				case PlayerEnum.ONE:
-					remainingTowersEnum.ONE++;
+					RemainingTowersEnum.ONE++;
 					break;
 				case PlayerEnum.TWO:
-					remainingTowersEnum.TWO++;
+					RemainingTowersEnum.TWO++;
 					break;
 				case PlayerEnum.THREE:
-					remainingTowersEnum.THREE++;
+					RemainingTowersEnum.THREE++;
 					break;
 				case PlayerEnum.FOUR:
-					remainingTowersEnum.FOUR++;
+					RemainingTowersEnum.FOUR++;
 					break;
 				}
 			}
@@ -1799,31 +1823,31 @@ function canvasApp(){
 			holdingTemple = true;
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
-				if (remainingTemplesEnum.ONE == 0) {
+				if (RemainingTemplesEnum.ONE == 0) {
 					holdingTemple = false;
 				} else {
-					remainingTemplesEnum.ONE--;
+					RemainingTemplesEnum.ONE--;
 				}
 				break;
 			case PlayerEnum.TWO:
-				if (remainingTemplesEnum.TWO == 0) {
+				if (RemainingTemplesEnum.TWO == 0) {
 					holdingTemple = false;
 				} else {
-					remainingTemplesEnum.TWO--;
+					RemainingTemplesEnum.TWO--;
 				}
 				break;
 			case PlayerEnum.THREE:
-				if (remainingTemplesEnum.THREE == 0) {
+				if (RemainingTemplesEnum.THREE == 0) {
 					holdingTemple = false;
 				} else {
-					remainingTemplesEnum.THREE--;
+					RemainingTemplesEnum.THREE--;
 				}
 				break;
 			case PlayerEnum.FOUR:
-				if (remainingTemplesEnum.FOUR == 0) {
+				if (RemainingTemplesEnum.FOUR == 0) {
 					holdingTemple = false;
 				} else {
-					remainingTemplesEnum.FOUR--;
+					RemainingTemplesEnum.FOUR--;
 				}
 				break;
 			}
@@ -1876,28 +1900,32 @@ function canvasApp(){
 				//holdingTemple = true;
 				switch(currPlayer) {
 				case PlayerEnum.ONE:
-					remainingTemplesEnum.ONE++;
+					RemainingTemplesEnum.ONE++;
 					break;
 				case PlayerEnum.TWO:
-					remainingTemplesEnum.TWO++;
+					RemainingTemplesEnum.TWO++;
 					break;
 				case PlayerEnum.THREE:
-					remainingTemplesEnum.THREE++;
+					RemainingTemplesEnum.THREE++;
 					break;
 				case PlayerEnum.FOUR:
-					remainingTemplesEnum.FOUR++;
+					RemainingTemplesEnum.FOUR++;
 					break;
 				}
 			}
 			drawScreen();
 		// Else if mouse is over expand settlement button
-		} else if (hutsLeft() && (!pickingSettlement) && buildingTime && EXPAND_BTN_X < mouseX && mouseX < (EXPAND_BTN_X + (2*WIDTH)) && 
+		} else if (hutsLeft() && (!pickingSettlement) && (!pickingAdjacentTerrainType) && buildingTime && 
+			EXPAND_BTN_X < mouseX && mouseX < (EXPAND_BTN_X + (2*WIDTH)) && 
 			EXPAND_BTN_Y < mouseY && mouseY < (EXPAND_BTN_Y + SIZE)) {
+			
 			pickingSettlement = true;
 			drawScreen();
 		// Else if mouse is over board and choosing settlement (expanding)
-		} else if (pickingSettlement && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
+		} else if (pickingSettlement && (!pickingAdjacentTerrainType) && 
+			(PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			
 			pickingSettlement = false;
 			pickingAdjacentTerrainType = true;
 			
@@ -1906,13 +1934,11 @@ function canvasApp(){
 			selectedSettlement = []; // filled w/ HexState
 			// Fill selectedSettlement[]
 			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
-			// TO DO: Recoverable error handling - reset to normal build stage
 			if (selectedSettlement.length === 0) {
 				alert("You must select a valid settlement of yours to expand upon.");
-				pickingSettlement = true;
 				pickingAdjacentTerrainType = false;
 			}
-
+			console.log("Selected settlement: " + selectedSettlement);
 			drawScreen();
 		// Else if mouse is over board and choosing adjacent terrain (expanding)
 		} else if (pickingAdjacentTerrainType && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
@@ -1924,32 +1950,21 @@ function canvasApp(){
 			console.log("First selected settlement row: " + selectedSettlement[0].row + " col: " + selectedSettlement[0].col);
 			if (isAdjacentToSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2))) {
 				// expand settlement
-				expandSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
+				expandSettlementV2(hexRow, hexCol + Math.floor((ROWS-1)/2));
 				placedAtLeastOneBuilding = true;
 
 				if (builtTwoOfThreeTypes()) {
 					// Early Victory!
 					gameOver = true;
 				}
-
-			// TO DO: Recoverable error handling - reset to normal build stage
 			} else {
 				alert("You must only expand settlements on hexagons adjacent to your established settlement.");
-				pickingAdjacentTerrainType = true;
 			}
-
 			drawScreen();
 		// Else if mouse is over DONE button
 		} else if (placedAtLeastOneBuilding && DONE_BTN_X < mouseX && mouseX < (DONE_BTN_X + (2*WIDTH)) && 
 			DONE_BTN_Y < mouseY && mouseY < (DONE_BTN_Y + SIZE)) {
-			// SWITCH PLAYERS:  (2-player game)
-			/*if (currPlayer === PlayerEnum.ONE) {
-				currPlayer = PlayerEnum.TWO;
-			} else {
-				currPlayer = PlayerEnum.ONE;
-			}*/
-
-
+		
 			if (terrDistIndex === TILE_NUM) {
 				outOfTiles = true;
 				gameOver = true;
@@ -1978,29 +1993,6 @@ function canvasApp(){
 				break;
 			}
 
-			// SWITCH PLAYERS: (2-4 player game)
-			// CurrPlayer === 1
-			//if (currPlayer === PlayerEnum.ONE) {
-			//	currPlayer = PlayerEnum.TWO;
-			// CurrPlayer === 2
-			//} else if (currPlayer === PlayerEnum.TWO && numPlayers === 2) {
-			//	currPlayer = PlayerEnum.ONE;
-			/*} else if (currPlayer === PlayerEnum.TWO && numPlayers === 2) {
-				currPlayer = PlayerEnum.ONE;*/
-			//} else if (currPlayer === PlayerEnum.TWO && numPlayers > 2) {
-			//	currPlayer = PlayerEnum.THREE;
-			//}
-			// CurrPlayer === 3
-			//else if (currPlayer === PlayerEnum.THREE && numPlayers === 3) {
-			//	currPlayer = PlayerEnum.ONE;
-			//} else if (currPlayer === PlayerEnum.THREE && numPlayers > 3) {
-			//	currPlayer = PlayerEnum.FOUR;
-			//}
-			// CurrPlayer === 4
-			//else if (currPlayer === PlayerEnum.FOUR) {
-			//	currPlayer = PlayerEnum.ONE;
-			//}
-
 			buildingTime = false;
 			placedAtLeastOneBuilding = false;
 			drawScreen();
@@ -2010,22 +2002,22 @@ function canvasApp(){
 	function hutsLeft() {
 		switch(currPlayer) {
 		case PlayerEnum.ONE:
-			if (remainingHutsEnum.ONE === 0) {
+			if (RemainingHutsEnum.ONE === 0) {
 				return false;
 			}
 			break;
 		case PlayerEnum.TWO:
-			if (remainingHutsEnum.TWO === 0) {
+			if (RemainingHutsEnum.TWO === 0) {
 				return false;
 			}
 			break;
 		case PlayerEnum.THREE:
-			if (remainingHutsEnum.THREE === 0) {
+			if (RemainingHutsEnum.THREE === 0) {
 				return false;
 			}
 			break;
 		case PlayerEnum.FOUR:
-			if (remainingHutsEnum.FOUR === 0) {
+			if (RemainingHutsEnum.FOUR === 0) {
 				return false;
 			}
 			break;
@@ -2053,19 +2045,19 @@ function canvasApp(){
 		// If no huts left, automatically can't build
 		switch(currPlayer) {
 		case 1:
-			if (remainingHutsEnum.ONE == 0)
+			if (RemainingHutsEnum.ONE == 0)
 				cantBuildHutCounter = numHexagons;
 			break;
 		case 2:
-			if (remainingHutsEnum.TWO == 0)
+			if (RemainingHutsEnum.TWO == 0)
 				cantBuildHutCounter = numHexagons;
 			break;
 		case 3:
-			if (remainingHutsEnum.THREE == 0)
+			if (RemainingHutsEnum.THREE == 0)
 				cantBuildHutCounter = numHexagons;
 			break;
 		case 4:
-			if (remainingHutsEnum.FOUR == 0)
+			if (RemainingHutsEnum.FOUR == 0)
 				cantBuildHutCounter = numHexagons;
 			break;
 		}
@@ -2088,19 +2080,19 @@ function canvasApp(){
 		// If has no towers, automatically can't build
 		switch(currPlayer) {
 		case 1:
-			if (remainingTowersEnum.ONE == 0)
+			if (RemainingTowersEnum.ONE == 0)
 				cantBuildTowerCounter = numHexagons;
 			break;
 		case 2:
-			if (remainingTowersEnum.TWO == 0)
+			if (RemainingTowersEnum.TWO == 0)
 				cantBuildTowerCounter = numHexagons;
 			break;
 		case 3:
-			if (remainingTowersEnum.THREE == 0)
+			if (RemainingTowersEnum.THREE == 0)
 				cantBuildTowerCounter = numHexagons;
 			break;
 		case 4:
-			if (remainingTowersEnum.FOUR == 0)
+			if (RemainingTowersEnum.FOUR == 0)
 				cantBuildTowerCounter = numHexagons;
 			break;
 		}
@@ -2122,19 +2114,19 @@ function canvasApp(){
 		// If has no temples, automatically can't build
 		switch(currPlayer) {
 		case 1:
-			if (remainingTemplesEnum.ONE == 0)
+			if (RemainingTemplesEnum.ONE == 0)
 				cantBuildTempleCounter = numHexagons;
 			break;
 		case 2:
-			if (remainingTemplesEnum.TWO == 0)
+			if (RemainingTemplesEnum.TWO == 0)
 				cantBuildTempleCounter = numHexagons;
 			break;
 		case 3:
-			if (remainingTemplesEnum.THREE == 0)
+			if (RemainingTemplesEnum.THREE == 0)
 				cantBuildTempleCounter = numHexagons;
 			break;
 		case 4:
-			if (remainingTemplesEnum.FOUR == 0)
+			if (RemainingTemplesEnum.FOUR == 0)
 				cantBuildTempleCounter = numHexagons;
 			break;
 		}
@@ -2157,19 +2149,19 @@ function canvasApp(){
 		// If no huts left, automatically can't expand
 		switch(currPlayer) {
 		case 1:
-			if (remainingHutsEnum.ONE == 0)
+			if (RemainingHutsEnum.ONE == 0)
 				cantExpandCounter = numHexagons;
 			break;
 		case 2:
-			if (remainingHutsEnum.TWO == 0)
+			if (RemainingHutsEnum.TWO == 0)
 				cantExpandCounter = numHexagons;
 			break;
 		case 3:
-			if (remainingHutsEnum.THREE == 0)
+			if (RemainingHutsEnum.THREE == 0)
 				cantExpandCounter = numHexagons;
 			break;
 		case 4:
-			if (remainingHutsEnum.FOUR == 0)
+			if (RemainingHutsEnum.FOUR == 0)
 				cantExpandCounter = numHexagons;
 			break;
 		}
@@ -2504,30 +2496,30 @@ function canvasApp(){
 	function builtTwoOfThreeTypes() {
 		switch(currPlayer) {
 		case PlayerEnum.ONE:
-			if ((remainingHutsEnum.ONE === 0 && remainingTowersEnum.ONE === 0) ||
-				(remainingTowersEnum.ONE === 0 && remainingTemplesEnum.ONE === 0) ||
-				(remainingTemplesEnum.ONE === 0 && remainingHutsEnum.ONE === 0)) {
+			if ((RemainingHutsEnum.ONE === 0 && RemainingTowersEnum.ONE === 0) ||
+				(RemainingTowersEnum.ONE === 0 && RemainingTemplesEnum.ONE === 0) ||
+				(RemainingTemplesEnum.ONE === 0 && RemainingHutsEnum.ONE === 0)) {
 					return true;
 				}
 			break;
 		case PlayerEnum.TWO:
-			if ((remainingHutsEnum.TWO === 0 && remainingTowersEnum.TWO === 0) ||
-				(remainingTowersEnum.TWO === 0 && remainingTemplesEnum.TWO === 0) ||
-				(remainingTemplesEnum.TWO === 0 && remainingHutsEnum.TWO === 0)) {
+			if ((RemainingHutsEnum.TWO === 0 && RemainingTowersEnum.TWO === 0) ||
+				(RemainingTowersEnum.TWO === 0 && RemainingTemplesEnum.TWO === 0) ||
+				(RemainingTemplesEnum.TWO === 0 && RemainingHutsEnum.TWO === 0)) {
 					return true;
 				}
 			break;
 		case PlayerEnum.THREE:
-			if ((remainingHutsEnum.THREE === 0 && remainingTowersEnum.THREE === 0) ||
-				(remainingTowersEnum.THREE === 0 && remainingTemplesEnum.THREE === 0) ||
-				(remainingTemplesEnum.THREE === 0 && remainingHutsEnum.THREE === 0)) {
+			if ((RemainingHutsEnum.THREE === 0 && RemainingTowersEnum.THREE === 0) ||
+				(RemainingTowersEnum.THREE === 0 && RemainingTemplesEnum.THREE === 0) ||
+				(RemainingTemplesEnum.THREE === 0 && RemainingHutsEnum.THREE === 0)) {
 					return true;
 				}
 			break;
 		case PlayerEnum.FOUR:
-			if ((remainingHutsEnum.FOUR === 0 && remainingTowersEnum.FOUR === 0) ||
-				(remainingTowersEnum.FOUR === 0 && remainingTemplesEnum.FOUR === 0) ||
-				(remainingTemplesEnum.FOUR === 0 && remainingHutsEnum.FOUR === 0)) {
+			if ((RemainingHutsEnum.FOUR === 0 && RemainingTowersEnum.FOUR === 0) ||
+				(RemainingTowersEnum.FOUR === 0 && RemainingTemplesEnum.FOUR === 0) ||
+				(RemainingTemplesEnum.FOUR === 0 && RemainingHutsEnum.FOUR === 0)) {
 					return true;
 				}
 			break;
@@ -2536,22 +2528,164 @@ function canvasApp(){
 		return false;
 	}
 
+	// Record # of huts being built, and update/account for huts left also
 	// Fills huts into hexagons adjacent to all settlement Hexagons
-	
-	// Record # of huts being built, and update/account for huts left
+	// stateRow and stateCol are the boardState rows/cols of the clicked hex adj to settlement
+	function expandSettlementV2(stateRow, stateCol) {
+		var terrain = boardState[stateRow][stateCol].type;
+		console.log("Terrain type to expand to: " + terrain);
+		var builtHuts, rowOffset, colOffset = 0;
+		for (var i = 0; i < selectedSettlement.length; i++) {
+			console.log("Selected settlement hex row to check adjacencies of: " + selectedSettlement[i].row + " col: " + selectedSettlement[i].col);
+			for (var j = 0; j < 6; j++) {
+				switch(j) {
+				case 0:
+					rowOffset = -1;
+					colOffset = 0 + Math.floor((ROWS-1)/2); // for boardState
+					break;
+				case 1:
+					rowOffset = -1; 
+					colOffset = 1 + Math.floor((ROWS-1)/2);
+					break;
+				case 2:
+					rowOffset = 0;
+					colOffset = 1 + Math.floor((ROWS-1)/2);
+					break;
+				case 3:
+					rowOffset = 1; 
+					colOffset = 0 + Math.floor((ROWS-1)/2);
+					break;
+				case 4:
+					rowOffset = 1;
+					colOffset = -1 + Math.floor((ROWS-1)/2);
+					break;
+				case 5:
+					rowOffset = 0;
+					colOffset = -1 + Math.floor((ROWS-1)/2);
+					break;
+				}
+				console.log("Try expanding to hex row: " + (selectedSettlement[i].row+rowOffset) + " col: " + (selectedSettlement[i].col + colOffset - Math.floor((ROWS-1)/2)));
+				if (boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset] !== null &&
+					boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts === 0 &&
+					boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].towers === 0 &&
+					boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].temples === 0 &&
+					boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].type === terrain) {
 
+					console.log("Expanding to hex row: " + (selectedSettlement[i].row+rowOffset) + " col: " + (selectedSettlement[i].col+colOffset - Math.floor((ROWS-1)/2)));
+
+					switch(currPlayer) {
+					case PlayerEnum.ONE:
+						if (RemainingHutsEnum.ONE > 0) {
+							// If player has huts left to build:
+							boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].player = currPlayer;
+							if (RemainingHutsEnum.ONE >= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level) {
+								// If player has enough huts, levels, else rest:
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								PlacedHutsEnum.ONE += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								builtHuts += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								RemainingHutsEnum.ONE -= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+							} else {
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									RemainingHutsEnum.ONE;
+								PlacedHutsEnum.ONE += RemainingHutsEnum.ONE;
+								builtHuts += RemainingHutsEnum.ONE;
+								RemainingHutsEnum.ONE = 0;
+							}
+						}
+						break;
+					case PlayerEnum.TWO:
+						if (RemainingHutsEnum.TWO > 0) {
+							// If player has huts left to build:
+							boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].player = currPlayer;
+							if (RemainingHutsEnum.TWO >= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level) {
+								// If player has enough huts, levels, else rest:
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								PlacedHutsEnum.TWO += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								builtHuts += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								RemainingHutsEnum.TWO -= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+							} else {
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									RemainingHutsEnum.TWO;
+								PlacedHutsEnum.TWO += RemainingHutsEnum.TWO;
+								builtHuts += RemainingHutsEnum.TWO;
+								RemainingHutsEnum.TWO = 0;
+							}
+						}
+						break;
+					case PlayerEnum.THREE:
+						if (RemainingHutsEnum.THREE > 0) {
+							// If player has huts left to build:
+							boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].player = currPlayer;
+							if (RemainingHutsEnum.THREE >= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level) {
+								// If player has enough huts, levels, else rest:
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								PlacedHutsEnum.THREE += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								builtHuts += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								RemainingHutsEnum.THREE -= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+							} else {
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									RemainingHutsEnum.THREE;
+								PlacedHutsEnum.THREE += RemainingHutsEnum.THREE;
+								builtHuts += RemainingHutsEnum.THREE;
+								RemainingHutsEnum.THREE = 0;
+							}
+						}
+						break;
+					case PlayerEnum.FOUR:
+						if (RemainingHutsEnum.FOUR > 0) {
+							// If player has huts left to build:
+							boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].player = currPlayer;
+							if (RemainingHutsEnum.FOUR >= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level) {
+								// If player has enough huts, levels, else rest:
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								PlacedHutsEnum.FOUR += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								builtHuts += boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+								RemainingHutsEnum.FOUR -= boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].level;
+							} else {
+								boardState[selectedSettlement[i].row+rowOffset][selectedSettlement[i].col+colOffset].huts = 
+									RemainingHutsEnum.FOUR;
+								PlacedHutsEnum.FOUR += RemainingHutsEnum.FOUR;
+								builtHuts += RemainingHutsEnum.FOUR;
+								RemainingHutsEnum.FOUR = 0;
+							}
+						}
+						break;
+					default:
+					}
+				}
+			}
+		}
+	}
+
+
+	// Record # of huts being built, and update/account for huts left also
+	// Fills huts into hexagons adjacent to all settlement Hexagons
+	// stateRow and stateCol are the boardState rows/cols of the clicked hex adj to settlement
 	function expandSettlement(stateRow, stateCol) {
 		var terrain = boardState[stateRow][stateCol].type;
+		console.log("Terrain type to expand to: " + terrain);
 		var builtHuts, rowOffset, colOffset = 0;
 		for (var i = 0; i < selectedSettlement.length; i++) {
 			console.log("selected settlement hex row: " + selectedSettlement[i].row + " col: " + selectedSettlement[i].col);
+			console.log("settlementRowCol[i][0]: " + settlementRowCol[i][0] + " settlementRowCol[i][1]: " + settlementRowCol[i][1]);
 			try {
+				console.log("try expanding to hex row: " + (selectedSettlement[i].row-1) + " col: " + selectedSettlement[i].col);
+				console.log("try expanding to settlementRowCol[i][0]-1: " + (settlementRowCol[i][0]-1) + " settlementRowCol[i][1]: " + settlementRowCol[i][1]);
 				if (//(boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].player === currPlayer ||
-					(boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].huts < 1 ||
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].huts === 0 &&
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].towers === 0 &&
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].temples === 0 &&
+					/*(boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].huts < 1 ||
 					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].towers < 1 ||
-					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].temples < 1) &&
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].temples < 1) &&*/
 					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]].type === terrain) {
 					
+					console.log("expanding to hex row: " + (selectedSettlement[i].row-1) + " col: " + selectedSettlement[i].col);
+
 					rowOffset = -1;
 					colOffset = 0;
 					switch(currPlayer) {
@@ -2642,12 +2776,19 @@ function canvasApp(){
 				console.log(e);
 			}
 			try {
+				console.log("try expanding to hex row: " + (selectedSettlement[i].row-1) + " col: " + (selectedSettlement[i].col+1));
+				// not finished console.log("try expanding to hex row: " + (selectedSettlement[i].row-1) + " col: " + (selectedSettlement[i].col+1));
 				if (//(boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].player === currPlayer ||
-					(boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].huts < 1 ||
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].huts === 0 &&
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].towers === 0 &&
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].temples === 0 &&
+					/*(boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].huts < 1 ||
 					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].towers < 1 ||
-					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].temples < 1) &&
+					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].temples < 1) &&*/
 					boardState[settlementRowCol[i][0]-1][settlementRowCol[i][1]+1].type === terrain) {
 					
+					console.log("expanding to hex row: " + (selectedSettlement[i].row-1) + " col: " + (selectedSettlement[i].col+1));
+
 					rowOffset = -1;
 					colOffset = 1;
 					switch(currPlayer) {
@@ -2739,12 +2880,18 @@ function canvasApp(){
 				console.log(e);
 			}
 			try {
+				console.log("try expanding to hex row: " + (selectedSettlement[i].row) + " col: " + (selectedSettlement[i].col+1));
 				if (//(boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].player === currPlayer ||
-					(boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].huts < 1 ||
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].huts === 0 &&
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].towers === 0 &&
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].temples === 0 &&
+					/*(boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].huts < 1 ||
 					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].towers < 1 ||
-					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].temples < 1) &&
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].temples < 1) &&*/
 					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]+1].type === terrain) {
 					
+					console.log("expanding to hex row: " + (selectedSettlement[i].row) + " col: " + (selectedSettlement[i].col+1));
+
 					rowOffset = 0;
 					colOffset = 1;
 					switch(currPlayer) {
@@ -2836,12 +2983,18 @@ function canvasApp(){
 				console.log(e);
 			}
 			try {
+				console.log("try expanding to hex row: " + (selectedSettlement[i].row+1) + " col: " + selectedSettlement[i].col);
 				if (//(boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].player === currPlayer ||
-					(boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].huts < 1 ||
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].huts === 0 &&
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].towers === 0 &&
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].temples === 0 &&
+					/*(boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].huts < 1 ||
 					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].towers < 1 ||
-					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].temples < 1) &&
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].temples < 1) &&*/
 					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]].type === terrain) {
 					
+					console.log("expanding to hex row: " + (selectedSettlement[i].row+1) + " col: " + selectedSettlement[i].col);
+
 					rowOffset = 1;
 					colOffset = 0;
 					switch(currPlayer) {
@@ -2933,12 +3086,18 @@ function canvasApp(){
 				console.log(e);
 			}
 			try {
+				console.log("try expanding to hex row: " + (selectedSettlement[i].row+1) + " col: " + (selectedSettlement[i].col-1));
 				if (//(boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].player === currPlayer ||
-					(boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].huts < 1 ||
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].huts === 0 &&
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].towers === 0 &&
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].temples === 0 &&
+					/*(boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].huts < 1 ||
 					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].towers < 1 ||
-					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].temples < 1) &&
+					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].temples < 1) &&*/
 					boardState[settlementRowCol[i][0]+1][settlementRowCol[i][1]-1].type === terrain) {
 					
+					console.log("expanding to hex row: " + (selectedSettlement[i].row+1) + " col: " + (selectedSettlement[i].col-1));
+
 					rowOffset = 1;
 					colOffset = -1;
 					switch(currPlayer) {
@@ -3030,12 +3189,18 @@ function canvasApp(){
 				console.log(e);
 			}
 			try {
+				console.log("try expanding to hex row: " + selectedSettlement[i].row + " col: " + (selectedSettlement[i].col-1));
 				if (//(boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].player === currPlayer ||
-					(boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].huts < 1 ||
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].huts === 0 &&
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].towers === 0 &&
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].temples === 0 &&
+					/*(boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].huts < 1 ||
 					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].towers < 1 ||
-					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].temples < 1) &&
+					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].temples < 1) &&*/
 					boardState[settlementRowCol[i][0]][settlementRowCol[i][1]-1].type === terrain) {
 					
+					console.log("expanding to hex row: " + selectedSettlement[i].row + " col: " + (selectedSettlement[i].col-1));
+
 					rowOffset = 0;
 					colOffset = -1;
 					switch(currPlayer) {
@@ -3349,7 +3514,7 @@ function canvasApp(){
 		} else if (expansionCounter === 3) {
 			eruption = false;
 		} else {
-			alert("Spaces must be filled and of the same level under the tile for an eruption.");
+			alert("Eruptions must take place on filled spaces of the all same level under the tile. Eruptions also cannot destroy towers, temples, nor entire settlements.");
 			return false;
 		}
 		console.log("Eruption = " + eruption);
@@ -3982,5 +4147,5 @@ function canvasApp(){
 
 	theCanvas.addEventListener("mousemove", onMouseMove, false);
 	theCanvas.addEventListener("click", onMouseClick, false);
-	window.addEventListener("keydown", onKeyDown, false);
+	theCanvas.addEventListener("keydown", onKeyDown, false);
 }
