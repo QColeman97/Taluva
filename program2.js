@@ -1,6 +1,6 @@
 // Program #2
 // Quinn Coleman
-// CSC 378-1    2/21/18
+// CSC 378-1    3/6/18
 
 // Load audio and image assets first
 var audioElement;
