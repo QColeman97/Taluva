@@ -168,46 +168,57 @@ for (var i = 0; i < ROWS; i++) {
 	}
 }
 
+//STATE
 var choosingPlayerNum = true;
 var players = [];
 var playerIndex = 0;
 var terrDistIndex = 0;
 var remainingTiles = TILE_NUM - terrDistIndex;
 var outOfTiles = false;
+//STATE
+var idling = false;
+//STATE
 var holdingTile = false;
 var heldOverPlaced = false;
+//STATE
+var buildingTime = false;
+//STATE
 var holdingHut = false;
 var buildingHuts = false;
+//STATE
 var holdingTower = false;
 var buildingTowers = false;
+//STATE
 var holdingTemple = false;
 var buildingTemples = false;
+var placedAtLeastOneBuilding = false;
+//STATE
+var pickingSettlement = false;
+var expanding = false;
+//STATE
+var pickingAdjacentTerrainType = false;
 var tileAngle = 0;
 var tileFlipped = false;
 var firstDraw = true;
 var currPlayer = PlayerEnum.ONE;
-var buildingTime = false;
-var placedAtLeastOneBuilding = false;
-var pickingSettlement = false;
-var expanding = false;
-var pickingAdjacentTerrainType = false;
 
 var gameOver = false;
 var lastPlayerAlive = 0; 
 var onePlayerLeft = false;
 
-/*var RemainingHutsEnum = {
+var RemainingHutsEnum = {
 	ONE: HUTS/4,
 	TWO: HUTS/4,
 	THREE: HUTS/4,
 	FOUR: HUTS/4
-};*/
-var RemainingHutsEnum = {
+};
+// Testing
+/*var RemainingHutsEnum = {
 	ONE: HUTS/4,
 	TWO: HUTS/8,
 	THREE: HUTS/4,
 	FOUR: HUTS/4
-};
+};*/
 var RemainingTemplesEnum = {
 	ONE: TEMPLES/4,
 	TWO: TEMPLES/4,
@@ -1438,74 +1449,85 @@ function canvasApp(){
 		// Choosing number of players: 1
 		if (choosingPlayerNum && PANEL_WIDTH/9 < mouseX && mouseX < ((PANEL_WIDTH/9) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
+			// STATE CHANGE
 			choosingPlayerNum = false;
+			
 			console.log("Clicked P1");
 			alert("Psyche! Starting a 2 player Taluva game... (1 player functionality is yet to be implemented)");
 			players = new Array(2);
 			for (var i = 0; i < 2; i++) {
 				players[i] = 1;
 			}
+			// STATE CHANGE
+			idling = true;
 			drawScreen();
 		}
 		// Choosing number of players: 2
 		else if (choosingPlayerNum && PANEL_WIDTH/3 < mouseX && mouseX < ((PANEL_WIDTH/3) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
+			// STATE CHANGE
 			choosingPlayerNum = false;
+			
 			console.log("Clicked P2");
 			players = new Array(2);
 			for (var i = 0; i < 2; i++) {
 				players[i] = 1;
 			}
+			// STATE CHANGE
+			idling = true;
 			drawScreen();
 		}
 		// Choosing number of players: 3
 		else if (choosingPlayerNum && (5*PANEL_WIDTH/9) < mouseX && mouseX < ((5*PANEL_WIDTH/9) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
+			// STATE CHANGE
 			choosingPlayerNum = false;
+			
 			console.log("Clicked P3");
 			players = new Array(3);
 			for (var i = 0; i < 3; i++) {
 				players[i] = 1;
 			}
+			// STATE CHANGE
+			idling = true;
 			drawScreen();
 		}
 		// Choosing number of players: 4
 		else if (choosingPlayerNum && (7*PANEL_WIDTH/9) < mouseX && mouseX < ((7*PANEL_WIDTH/9) + (WIDTH/3)) &&
 			DECK_Y/2.5 < mouseY && mouseY < (DECK_Y/2.5 + SIZE)) {
+			// STATE CHANGE
 			choosingPlayerNum = false;
+			
 			console.log("Clicked P4");
 			players = new Array(4);
 			for (var i = 0; i < 4; i++) {
 				players[i] = 1;
 			}
+			// STATE CHANGE
+			idling = true;
 			drawScreen();
 		}
 		// If mouse is over draw deck
-		else if ((!holdingTile) && (!buildingTime) && (DECK_X-WIDTH) < mouseX && mouseX < (DECK_X+WIDTH) && 
+		else if (idling && (!holdingTile) && (!buildingTime) && (DECK_X-WIDTH) < mouseX && mouseX < (DECK_X+WIDTH) && 
 			DECK_Y-(2*SIZE) < mouseY && mouseY < DECK_Y+(1.5*SIZE)) {
 			console.log("Clicked on deck");
-			holdingTile = true;
-
-			/*if (terrDistIndex <= 47)
-				terrDistIndex++;
-			if (terrDistIndex === TILE_NUM)
-				outOfTiles = true;*/
-			// TESTING
-			//if (terrDistIndex <= 47)
+			// STATE CHANGE
+			idling = false;
+			
 			terrDistIndex++;
-			/*if (terrDistIndex === TILE_NUM) {
-				outOfTiles = true;
-				gameOver = true;
-			}*/
 			remainingTiles = TILE_NUM - terrDistIndex;
 
+			// STATE CHANGE
+			holdingTile = true;
 			console.log("Holding tile: " + holdingTile);
 			
 			drawScreen();
 		// Else if mouse is over board && holdingTile	
 		} else if (holdingTile && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			// STATE CHANGE
 			holdingTile = false;
+
 			// Draw a new tile at appropriate coordinates
 			var tileRow = getTopRow(mouseX, mouseY);
 			var tileCol = getLeftmostCol(mouseX, mouseY, tileRow);
@@ -1575,6 +1597,7 @@ function canvasApp(){
 					boardState[tileRow+1][tileCol+Math.floor((ROWS-1)/2)] = newLeftHex;
 					boardState[tileRow+1][tileCol+1+Math.floor((ROWS-1)/2)] = newRightHex;
 				}
+				// STATE CHANGE
 				buildingTime = true;
 				heldOverPlaced = false;
 	
@@ -1618,7 +1641,8 @@ function canvasApp(){
 			} else {
 				console.log("ILLEGAL PLACEMENT");
 				if (tileFlipped) { tileFlipped = false; }
-				//holdingTile = true;
+				// STATE CHANGE
+				idling = true;
 				// Put tile back in deck
 				terrDistIndex--;
 				remainingTiles = TILE_NUM - terrDistIndex;
@@ -1631,7 +1655,9 @@ function canvasApp(){
 		// Clicked on huts
 		} else if ((!holdingHut) && buildingTime && HUT_X < mouseX && mouseX < (HUT_X+64)
 			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
-			holdingHut = true;
+			// STATE CHANGE - new
+			buildingTime = false;
+
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
 				if (RemainingHutsEnum.ONE == 0) {
@@ -1662,10 +1688,13 @@ function canvasApp(){
 				}
 				break;
 			}
+			// STATE CHANGE
+			holdingHut = true;
 			drawScreen();
 		// Else if mouse is over board && holding Hut
 		} else if (holdingHut && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			// STATE CHANGE
 			holdingHut = false;
 			
 			// Draw a new hut at appropriate coordinates
@@ -1719,11 +1748,15 @@ function canvasApp(){
 					break;
 				}
 			}
+			// STATE CHANGE
+			buildingTime = true;
 			drawScreen();
 		// Clicked on towers
 		} else if ((!holdingTower) && buildingTime && TOWER_X < mouseX && mouseX < (TOWER_X+64)
 			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
-			holdingTower = true;
+			// STATE CHANGE
+			buildingTime = false;
+
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
 				if (RemainingTowersEnum.ONE == 0) {
@@ -1754,10 +1787,13 @@ function canvasApp(){
 				}
 				break;
 			}
+			// STATE CHANGE
+			holdingTower = true;
 			drawScreen();
 		// Else if mouse is over board && holding Tower
 		} else if (holdingTower && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			// STATE CHANGE
 			holdingTower = false;
 			
 			// Draw a new tower at appropriate coordinates
@@ -1816,11 +1852,15 @@ function canvasApp(){
 					break;
 				}
 			}
+			// STATE CHANGE
+			buildingTime = true;
 			drawScreen();
 		// Clicked on temples
 		} else if ((!holdingTemple) && buildingTime && TEMPLE_X < mouseX && mouseX < (TEMPLE_X+64)
 			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
-			holdingTemple = true;
+			// STATE CHANGE
+			buildingTime = true;
+
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
 				if (RemainingTemplesEnum.ONE == 0) {
@@ -1851,10 +1891,13 @@ function canvasApp(){
 				}
 				break;
 			}
+			// STATE CHANGE
+			holdingTemple = true;
 			drawScreen();
 		// Else if mouse is over board && holding Temple
 		} else if (holdingTemple && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			//STATE CHANGE
 			holdingTemple = false;
 			
 			// Draw a new tower at appropriate coordinates
@@ -1913,21 +1956,25 @@ function canvasApp(){
 					break;
 				}
 			}
+			// STATE CHANGE
+			buildingTime = true;
 			drawScreen();
 		// Else if mouse is over expand settlement button
 		} else if (hutsLeft() && (!pickingSettlement) && (!pickingAdjacentTerrainType) && buildingTime && 
 			EXPAND_BTN_X < mouseX && mouseX < (EXPAND_BTN_X + (2*WIDTH)) && 
 			EXPAND_BTN_Y < mouseY && mouseY < (EXPAND_BTN_Y + SIZE)) {
-			
+			// STATE CHANGE
+			buildingTime = false;
+
+			// STATE CHANGE
 			pickingSettlement = true;
 			drawScreen();
 		// Else if mouse is over board and choosing settlement (expanding)
 		} else if (pickingSettlement && (!pickingAdjacentTerrainType) && 
 			(PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
-			
+			// STATE CHANGE
 			pickingSettlement = false;
-			pickingAdjacentTerrainType = true;
 			
 			var hexRow = getHexRow(mouseX, mouseY);
 			var hexCol = getHexCol(mouseX, mouseY, hexRow);
@@ -1936,13 +1983,18 @@ function canvasApp(){
 			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
 			if (selectedSettlement.length === 0) {
 				alert("You must select a valid settlement of yours to expand upon.");
-				pickingAdjacentTerrainType = false;
+				// STATE CHANGE
+				buildingTime = true;
+			} else {
+				// STATE CHANGE
+				pickingAdjacentTerrainType = true;
 			}
 			console.log("Selected settlement: " + selectedSettlement);
 			drawScreen();
 		// Else if mouse is over board and choosing adjacent terrain (expanding)
 		} else if (pickingAdjacentTerrainType && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
+			// STATE CHANGE
 			pickingAdjacentTerrainType = false;
 
 			var hexRow = getHexRow(mouseX, mouseY);
@@ -1960,11 +2012,17 @@ function canvasApp(){
 			} else {
 				alert("You must only expand settlements on hexagons adjacent to your established settlement.");
 			}
+
+			// STATE CHANGE
+			buildingTime = true;
 			drawScreen();
 		// Else if mouse is over DONE button
 		} else if (placedAtLeastOneBuilding && DONE_BTN_X < mouseX && mouseX < (DONE_BTN_X + (2*WIDTH)) && 
 			DONE_BTN_Y < mouseY && mouseY < (DONE_BTN_Y + SIZE)) {
-		
+			// STATE CHANGE
+			buildingTime = false;
+			placedAtLeastOneBuilding = false;
+
 			if (terrDistIndex === TILE_NUM) {
 				outOfTiles = true;
 				gameOver = true;
@@ -1993,8 +2051,9 @@ function canvasApp(){
 				break;
 			}
 
-			buildingTime = false;
-			placedAtLeastOneBuilding = false;
+			// STATE CHANGE
+			idling = true;
+			
 			drawScreen();
 		}
 	}
