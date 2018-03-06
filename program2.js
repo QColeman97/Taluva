@@ -156,7 +156,6 @@ class HexState {
 // Game global vars
 var drawableBoardHexagons = []; // Full of HexStates - for drawing
 var selectedSettlement = [];    // Full of HexStates of a single player's settlement
-var settlementRowCol = [];      // Full of state rows,cols of a single player's settlement
 
 // For game logic (legal tile placement)
 // Full of HexStates
@@ -349,7 +348,7 @@ function canvasApp(){
 		drawTitle();
 		
 		// Optional - draw gameboard's hexgrid
-		for (row = 0; row < ROWS; row++) {
+		/*for (row = 0; row < ROWS; row++) {
 		    for (col = 0; col < COLS; col++) {
                 if (row % 2 === 0) {
                     // even row
@@ -365,7 +364,7 @@ function canvasApp(){
                         -1, true, 0, false, 0, 0, 0, 0);
                 }
 		    }
-		}
+		}*/
 
  		// Draw game board's placed hexagons
 		for (var i = 0; i < drawableBoardHexagons.length; i++) {
@@ -842,9 +841,9 @@ function canvasApp(){
         drawDeck(DECK_X, DECK_Y, SIZE);
 
 		// Draw the hut, temple & tower deck if buildingTime
-		if (buildingTime) {
+		if (buildingTime || holdingHut || holdingTemple || holdingTower) {
 			drawHutsTemplesAndTowers();
-			if (hutsLeft() && !pickingSettlement && !pickingAdjacentTerrainType) {
+			if (hutsLeft() && buildingTime) {
 				drawExpandButton();
 			}
 		}
@@ -1079,9 +1078,8 @@ function canvasApp(){
 
 		context.fillStyle = 'black';
 		context.fillText("build something", HUT_X+20, HTT_Y+90);
-		if (!pickingSettlement && !pickingAdjacentTerrainType) {
+		if (buildingTime)
 			context.fillText("or", HUT_X+95, HTT_Y+115);
-		}
 	}
 
 	function drawDoneButton() {		
@@ -1168,36 +1166,25 @@ function canvasApp(){
 	//function drawBoardTiles(boardHexagons) {
 	function translateAndDrawHexState(row,col,level,type,rotation,player,huts,towers,temples) {
 		// boardHexagons is an array of HexState
-		//for (hex in boardHexagons) {
-			// x and y are centers of hex's
-			// corripsonds HexState row and col to appropriate x and y
-			var hexX;
-			//var hexY = (1.5*SIZE*hex.row) + SIZE;
-			var hexY = (1.5*SIZE*row) + SIZE;
-			//console.log("row: " + row, " col: " + col);
-			
-			var offset = Math.floor(row/2);
-			if (row % 2 === 0) {
-				hexX = WIDTH*(col+offset) + (3.5*WIDTH);
-				//hexX = WIDTH*(col+offset) + (3.5*WIDTH);
-			} else {
-				hexX = WIDTH*(col+offset) + (4*WIDTH);
-				//hexX = WIDTH*(col+offset) + (4*WIDTH);
-			}
-			//console.log("Rotation: " + rotation);
-			//console.log("Row: " + row + ", col & offset: " + col + " " + offset);
-			//console.log("hexX: " + hexX + ", hexY: " + hexY); 
-			drawHexagon(hexX,hexY,type, true, rotation, false, level, huts, towers, temples, player);
-		//}
+		// x and y are centers of hex's
+		// corripsonds HexState row and col to appropriate x and y
+		var hexX;
+		var hexY = (1.5*SIZE*row) + SIZE;
+		//console.log("row: " + row, " col: " + col);
+
+		var offset = Math.floor(row/2);
+		if (row % 2 === 0) {
+			hexX = WIDTH*(col+offset) + (3.5*WIDTH);
+		} else {
+			hexX = WIDTH*(col+offset) + (4*WIDTH);
+		}
+		drawHexagon(hexX,hexY,type, true, rotation, false, level, huts, towers, temples, player);
 	}
 
 	// Draw hexagon function
 	//function drawHexagon(centerX, centerY, SIZE, type, context, isPlaced, angle, isHeld, level) {
 	function drawHexagon(centerX, centerY, type, isPlaced, angle, isHeld, 
 		level, huts, towers, temples, player) {
-
-		//console.log("context.globalAlpha: " + context.globalAlpha);
-		//console.log("heldOverPlaced: " + heldOverPlaced);
 
 		var x = centerX;	
 		var y = centerY - SIZE;
@@ -1508,7 +1495,7 @@ function canvasApp(){
 			drawScreen();
 		}
 		// If mouse is over draw deck
-		else if (idling && (!holdingTile) && (!buildingTime) && (DECK_X-WIDTH) < mouseX && mouseX < (DECK_X+WIDTH) && 
+		else if (idling && (DECK_X-WIDTH) < mouseX && mouseX < (DECK_X+WIDTH) && 
 			DECK_Y-(2*SIZE) < mouseY && mouseY < DECK_Y+(1.5*SIZE)) {
 			console.log("Clicked on deck");
 			// STATE CHANGE
@@ -1653,7 +1640,7 @@ function canvasApp(){
 				tileAngle = 0;
 			}
 		// Clicked on huts
-		} else if ((!holdingHut) && buildingTime && HUT_X < mouseX && mouseX < (HUT_X+64)
+		} else if (buildingTime && HUT_X < mouseX && mouseX < (HUT_X+64)
 			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
 			// STATE CHANGE - new
 			buildingTime = false;
@@ -1752,7 +1739,7 @@ function canvasApp(){
 			buildingTime = true;
 			drawScreen();
 		// Clicked on towers
-		} else if ((!holdingTower) && buildingTime && TOWER_X < mouseX && mouseX < (TOWER_X+64)
+		} else if (buildingTime && TOWER_X < mouseX && mouseX < (TOWER_X+64)
 			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
 			// STATE CHANGE
 			buildingTime = false;
@@ -1856,10 +1843,10 @@ function canvasApp(){
 			buildingTime = true;
 			drawScreen();
 		// Clicked on temples
-		} else if ((!holdingTemple) && buildingTime && TEMPLE_X < mouseX && mouseX < (TEMPLE_X+64)
+		} else if (buildingTime && TEMPLE_X < mouseX && mouseX < (TEMPLE_X+64)
 			&& HTT_Y < mouseY && mouseY < (HTT_Y+64)) {
 			// STATE CHANGE
-			buildingTime = true;
+			buildingTime = false;
 
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
@@ -1960,7 +1947,7 @@ function canvasApp(){
 			buildingTime = true;
 			drawScreen();
 		// Else if mouse is over expand settlement button
-		} else if (hutsLeft() && (!pickingSettlement) && (!pickingAdjacentTerrainType) && buildingTime && 
+		} else if (hutsLeft() && buildingTime && 
 			EXPAND_BTN_X < mouseX && mouseX < (EXPAND_BTN_X + (2*WIDTH)) && 
 			EXPAND_BTN_Y < mouseY && mouseY < (EXPAND_BTN_Y + SIZE)) {
 			// STATE CHANGE
@@ -1970,8 +1957,7 @@ function canvasApp(){
 			pickingSettlement = true;
 			drawScreen();
 		// Else if mouse is over board and choosing settlement (expanding)
-		} else if (pickingSettlement && (!pickingAdjacentTerrainType) && 
-			(PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
+		} else if (pickingSettlement && (PANEL_WIDTH+(WIDTH/2)) < mouseX && mouseX < (BOARD_WIDTH-(WIDTH/2)) && 
 			(3*SIZE/4) < mouseY && mouseY < (BOARD_HEIGHT-(3*SIZE/4))) {
 			// STATE CHANGE
 			pickingSettlement = false;
@@ -2017,7 +2003,7 @@ function canvasApp(){
 			buildingTime = true;
 			drawScreen();
 		// Else if mouse is over DONE button
-		} else if (placedAtLeastOneBuilding && DONE_BTN_X < mouseX && mouseX < (DONE_BTN_X + (2*WIDTH)) && 
+		} else if (placedAtLeastOneBuilding  && buildingTime && DONE_BTN_X < mouseX && mouseX < (DONE_BTN_X + (2*WIDTH)) && 
 			DONE_BTN_Y < mouseY && mouseY < (DONE_BTN_Y + SIZE)) {
 			// STATE CHANGE
 			buildingTime = false;
@@ -2053,7 +2039,6 @@ function canvasApp(){
 
 			// STATE CHANGE
 			idling = true;
-			
 			drawScreen();
 		}
 	}
@@ -2730,8 +2715,6 @@ function canvasApp(){
 				boardState[stateRow][stateCol].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow][stateCol])) {
 						selectedSettlement.push(boardState[stateRow][stateCol]);
-						settlementRowCol.push([stateRow, stateCol]);
-						//fillSelectedSettlement(stateRow, stateCol);
 					}
 			}
 		} catch(e) {
@@ -2744,7 +2727,6 @@ function canvasApp(){
 				boardState[stateRow-1][stateCol].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow-1][stateCol])) {
 						selectedSettlement.push(boardState[stateRow-1][stateCol]);
-						settlementRowCol.push([stateRow-1, stateCol]);
 						fillSelectedSettlement(stateRow-1, stateCol);
 					}
 			}
@@ -2758,7 +2740,6 @@ function canvasApp(){
 				boardState[stateRow-1][stateCol+1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow-1][stateCol+1])) {
 						selectedSettlement.push(boardState[stateRow-1][stateCol+1]);
-						settlementRowCol.push([stateRow-1, stateCol+1]);
 						fillSelectedSettlement(stateRow-1, stateCol+1);
 					}
 			}
@@ -2772,7 +2753,6 @@ function canvasApp(){
 				boardState[stateRow][stateCol+1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow][stateCol+1])) {
 						selectedSettlement.push(boardState[stateRow][stateCol+1]);
-						settlementRowCol.push([stateRow, stateCol+1]);
 						fillSelectedSettlement(stateRow, stateCol+1);
 					}
 			} 
@@ -2786,7 +2766,6 @@ function canvasApp(){
 				boardState[stateRow+1][stateCol].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow+1][stateCol])) {
 						selectedSettlement.push(boardState[stateRow+1][stateCol]);
-						settlementRowCol.push([stateRow+1, stateCol]);
 						fillSelectedSettlement(stateRow+1, stateCol);	
 					}
 			}
@@ -2800,7 +2779,6 @@ function canvasApp(){
 				boardState[stateRow+1][stateCol-1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow+1][stateCol-1])) {
 						selectedSettlement.push(boardState[stateRow+1][stateCol-1]);
-						settlementRowCol.push([stateRow+1, stateCol-1]);
 						fillSelectedSettlement(stateRow+1, stateCol-1);
 					}
 			}
@@ -2814,7 +2792,6 @@ function canvasApp(){
 				boardState[stateRow][stateCol-1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow][stateCol-1])) {
 						selectedSettlement.push(boardState[stateRow][stateCol-1]);
-						settlementRowCol.push([stateRow, stateCol-1]);
 						fillSelectedSettlement(stateRow, stateCol-1);
 					}
 			}
@@ -2868,8 +2845,6 @@ function canvasApp(){
 				console.log("Tile UD in Valid");
 				switch(i) {
 				case 0: // bottom hex
-					// OLD WAY
-					//hexRowCols[i] = [tileRow+1, tileCol+(Math.floor((ROWS-1)/2)-Math.floor((tileRow+1)/2))];
 					hexRowCols[i] = [tileRow+1, tileCol+Math.floor((ROWS-1)/2)];
 					if (centerHex.type === SubtileTypeEnum.VOLCANO) {
 						volcanoIndex = i;
