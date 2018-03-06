@@ -49,12 +49,10 @@ const HUTS = 80;
 const TOWERS = 8;
 const TEMPLES = 12;
 
-//const TILE_NUM = 48;
-// testing
-const TILE_NUM = 6;
-const ROWS = 15;//9;
+const TILE_NUM = 48;
+const ROWS = 15;
 const TILE_ROWS = ROWS - 1;
-const COLS = 13;//7;
+const COLS = 13;
 const TILE_COLS = COLS - 1;
 const STATE_COLS = COLS + Math.floor((ROWS-1)/2); // 20
 
