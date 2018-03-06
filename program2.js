@@ -49,9 +49,9 @@ const HUTS = 80;
 const TOWERS = 8;
 const TEMPLES = 12;
 
-const TILE_NUM = 48;
+//const TILE_NUM = 48;
 // testing
-//const TILE_NUM = 5;
+const TILE_NUM = 6;
 const ROWS = 15;//9;
 const TILE_ROWS = ROWS - 1;
 const COLS = 13;//7;
@@ -211,13 +211,6 @@ var RemainingHutsEnum = {
 	THREE: HUTS/4,
 	FOUR: HUTS/4
 };
-// Testing
-/*var RemainingHutsEnum = {
-	ONE: HUTS/4,
-	TWO: HUTS/8,
-	THREE: HUTS/4,
-	FOUR: HUTS/4
-};*/
 var RemainingTemplesEnum = {
 	ONE: TEMPLES/4,
 	TWO: TEMPLES/4,
@@ -819,15 +812,15 @@ function canvasApp(){
 					alert("Player " + mostPlayer + " Wins! They built the most buildings. All hail!");
 				} else {
 					drawPlayersWin(tied);
-					var alertString = "Player ";
+					var alertString = "Players ";
 					for (var i = 0; i < tied.length - 1; i++) {
 						if (i === tied.length - 2) {
-							alertString += ((tied[i] + 1) + " ");
+							alertString += (tied[i] + " ");
 						} else {
-							alertString += ((tied[i] + 1) + ", ");
+							alertString += (tied[i] + ", ");
 						}
 					}
-					alertString += ("and " + tied[length-1] + " Win!! They all built equal buildings. Woah, chyah my fellow legions!");
+					alertString += ("and " + tied[tied.length-1] + " Win!! \nThey all built equal buildings. Woah, chyah my fellow legions!");
 					alert(alertString);
 				}
 			}
@@ -915,8 +908,8 @@ function canvasApp(){
 		}
 		context.font = '65px sans-serif';
 		context.fillText ("TALUVA", TITLE_X, TITLE_Y);
-		context.font = '30px sans-serif';
-		context.fillText ("Time", TITLE_X + WIDTH, TITLE_Y + (3*SIZE/2));
+		context.font = '25px sans-serif';
+		context.fillText ("Time", TITLE_X + WIDTH + 7, TITLE_Y + (3*SIZE/2));
 	}
 
 	function drawPlayerNumPrompt() {
@@ -1008,20 +1001,23 @@ function canvasApp(){
 		context.shadowColor='gray';
 		context.shadowBlur=5;
 		
+		console.log("tied.length: " + tied.length);
 		var playerString = "";
-		for (var i = 0; i < tied.length - 1; i++) {
+		for (var i = 0; i < (tied.length - 1); i++) {
 			if (i === tied.length - 2) {
-				playerString += ((tied[i] + 1) + " ");
+				playerString += (tied[i] + " ");
+				console.log("Playerstring at tied[0]: " + tied[i]);
 			} else {
-				playerString += ((tied[i] + 1) + ", ");
+				playerString += (tied[i] + ", ");
 			}
 		}
-		playerString += ("and " + tied[length-1]);
+		playerString += ("and " + tied[tied.length-1]);
+		console.log("Playerstring at tied[1]: " + tied[i]);
 
 		context.fillStyle = '#FFFFFF';
 		context.font = '30px sans-serif';
 		context.textBaseline = 'top';
-		context.fillText ("Players " + playerString + "Win!!", 35, DECK_Y/6);
+		context.fillText ("Players " + playerString + " Win!!", 35, DECK_Y/6);
 	}
 
 	function drawTileCounter() {
@@ -1078,7 +1074,7 @@ function canvasApp(){
 
 		context.fillStyle = 'black';
 		context.fillText("build something", HUT_X+20, HTT_Y+90);
-		if (buildingTime)
+		if (buildingTime && hutsLeft())
 			context.fillText("or", HUT_X+95, HTT_Y+115);
 	}
 
