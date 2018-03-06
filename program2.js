@@ -3514,10 +3514,10 @@ function canvasApp(){
 		}
 	}
 
-	function onKeyDown(e) {
+	function onKeyPress(e) {
 		if (holdingTile) {
-			switch (e.keyCode) {
-			case 82: // r = rotate
+			switch (e.key) {
+			case 'r': // r = rotate
 				tileAngle += 120 * (Math.PI/180);
 				if (tileAngle >= (2*Math.PI - 0.1) && tileFlipped) {
 					tileAngle = 60 * (Math.PI/180);
@@ -3526,10 +3526,10 @@ function canvasApp(){
 				}
 				drawScreen();
 				break;
-			case 70: // f = flip
-				if (tileFlipped) {
+			case 'f': // f = flip
+				if (tileFlipped === true) {
 					tileFlipped = false;
-				} else {
+				} else if (tileFlipped === false) {
 					tileFlipped = true;
 				}
 				console.log("tileFlipped: " + tileFlipped);
@@ -3548,5 +3548,5 @@ function canvasApp(){
 
 	theCanvas.addEventListener("mousemove", onMouseMove, false);
 	theCanvas.addEventListener("click", onMouseClick, false);
-	theCanvas.addEventListener("keydown", onKeyDown, false);
+	theCanvas.addEventListener("keypress", onKeyPress, false);
 }
