@@ -189,9 +189,15 @@ var gameOver = false;
 var lastPlayerAlive = 0; 
 var onePlayerLeft = false;
 
-var remainingHutsEnum = {
+/*var remainingHutsEnum = {
 	ONE: HUTS/4,
 	TWO: HUTS/4,
+	THREE: HUTS/4,
+	FOUR: HUTS/4
+};*/
+var remainingHutsEnum = {
+	ONE: HUTS/4,
+	TWO: 0,
 	THREE: HUTS/4,
 	FOUR: HUTS/4
 };
@@ -340,7 +346,7 @@ function canvasApp(){
 			if (builtTwoOfThreeTypes()) {
 				// Early Victory!
 				drawPlayerWin(currPlayer);
-				alert("Player " + currPlayer + " Wins! Two of the three types of your buildings have all been built! Radical.");
+				alert("Player " + currPlayer + " Wins! 2 of the 3 types of their buildings have all been built! Gnarly :)");
 			} else if (onePlayerLeft) {
 				var lastPlayer = 0;
 				switch(lastPlayerAlive) {
@@ -358,7 +364,7 @@ function canvasApp(){
 					break;
 				}
 				drawPlayerWin(lastPlayer);
-				alert("Player " + lastPlayer + " Wins! He's the last player with any buildings left to build. Woah, sweet!");
+				alert("Player " + lastPlayer + " Wins! They're the last player who can actually build anything. Woah, sweet!");
 			} else if (outOfTiles) {
 				// Find who has max temples -> towers -> huts
 				var mostPlayer = 0;
@@ -865,7 +871,7 @@ function canvasApp(){
         	context.shadowOffsetX=0;
 			context.shadowOffsetY=0;
         }
-        context.fillStyle = 'rgb(37, 90, 100)';
+        context.fillStyle = 'rgb(37, 80, 110)';
 		context.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
 	}
 
@@ -1604,16 +1610,32 @@ function canvasApp(){
 			holdingHut = true;
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
-				remainingHutsEnum.ONE--;
+				if (remainingHutsEnum.ONE == 0) {
+					holdingHut = false;
+				} else {
+					remainingHutsEnum.ONE--;
+				}
 				break;
 			case PlayerEnum.TWO:
-				remainingHutsEnum.TWO--;
+				if (remainingHutsEnum.TWO == 0) {
+					holdingHut = false;
+				} else {
+					remainingHutsEnum.TWO--;
+				}
 				break;
 			case PlayerEnum.THREE:
-				remainingHutsEnum.THREE--;
+				if (remainingHutsEnum.THREE == 0) {
+					holdingHut = false;
+				} else {
+					remainingHutsEnum.THREE--;
+				}
 				break;
 			case PlayerEnum.FOUR:
-				remainingHutsEnum.FOUR--;
+				if (remainingHutsEnum.FOUR == 0) {
+					holdingHut = false;
+				} else {
+					remainingHutsEnum.FOUR--;
+				}
 				break;
 			}
 			drawScreen();
@@ -1680,16 +1702,32 @@ function canvasApp(){
 			holdingTower = true;
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
-				remainingTowersEnum.ONE--;
+				if (remainingTowersEnum.ONE == 0) {
+					holdingTower = false;
+				} else {
+					remainingTowersEnum.ONE--;
+				}
 				break;
 			case PlayerEnum.TWO:
-				remainingTowersEnum.TWO--;
+				if (remainingTowersEnum.TWO == 0) {
+					holdingTower = false;
+				} else {
+					remainingTowersEnum.TWO--;
+				}
 				break;
 			case PlayerEnum.THREE:
-				remainingTowersEnum.THREE--;
+				if (remainingTowersEnum.THREE == 0) {
+					holdingTower = false;
+				} else {
+					remainingTowersEnum.THREE--;
+				}
 				break;
 			case PlayerEnum.FOUR:
-				remainingTowersEnum.FOUR--;
+				if (remainingTowersEnum.FOUR == 0) {
+					holdingTower = false;
+				} else {
+					remainingTowersEnum.FOUR--;
+				}
 				break;
 			}
 			drawScreen();
@@ -1761,16 +1799,32 @@ function canvasApp(){
 			holdingTemple = true;
 			switch(currPlayer) {
 			case PlayerEnum.ONE:
-				remainingTemplesEnum.ONE--;
+				if (remainingTemplesEnum.ONE == 0) {
+					holdingTemple = false;
+				} else {
+					remainingTemplesEnum.ONE--;
+				}
 				break;
 			case PlayerEnum.TWO:
-				remainingTemplesEnum.TWO--;
+				if (remainingTemplesEnum.TWO == 0) {
+					holdingTemple = false;
+				} else {
+					remainingTemplesEnum.TWO--;
+				}
 				break;
 			case PlayerEnum.THREE:
-				remainingTemplesEnum.THREE--;
+				if (remainingTemplesEnum.THREE == 0) {
+					holdingTemple = false;
+				} else {
+					remainingTemplesEnum.THREE--;
+				}
 				break;
 			case PlayerEnum.FOUR:
-				remainingTemplesEnum.FOUR--;
+				if (remainingTemplesEnum.FOUR == 0) {
+					holdingTemple = false;
+				} else {
+					remainingTemplesEnum.FOUR--;
+				}
 				break;
 			}
 			drawScreen();
@@ -1996,6 +2050,25 @@ function canvasApp(){
 				cantBuildHutCounter++;
 			}
 		}
+		// If no huts left, automatically can't build
+		switch(currPlayer) {
+		case 1:
+			if (remainingHutsEnum.ONE == 0)
+				cantBuildHutCounter = numHexagons;
+			break;
+		case 2:
+			if (remainingHutsEnum.TWO == 0)
+				cantBuildHutCounter = numHexagons;
+			break;
+		case 3:
+			if (remainingHutsEnum.THREE == 0)
+				cantBuildHutCounter = numHexagons;
+			break;
+		case 4:
+			if (remainingHutsEnum.FOUR == 0)
+				cantBuildHutCounter = numHexagons;
+			break;
+		}
 		if (cantBuildHutCounter === numHexagons)
 			cantBuildCounter++;
 
@@ -2012,6 +2085,25 @@ function canvasApp(){
 				cantBuildTowerCounter++;	
 			}
 		}
+		// If has no towers, automatically can't build
+		switch(currPlayer) {
+		case 1:
+			if (remainingTowersEnum.ONE == 0)
+				cantBuildTowerCounter = numHexagons;
+			break;
+		case 2:
+			if (remainingTowersEnum.TWO == 0)
+				cantBuildTowerCounter = numHexagons;
+			break;
+		case 3:
+			if (remainingTowersEnum.THREE == 0)
+				cantBuildTowerCounter = numHexagons;
+			break;
+		case 4:
+			if (remainingTowersEnum.FOUR == 0)
+				cantBuildTowerCounter = numHexagons;
+			break;
+		}
 		if (cantBuildTowerCounter === numHexagons)
 			cantBuildCounter++;
 		
@@ -2026,6 +2118,25 @@ function canvasApp(){
 				
 				cantBuildTempleCounter++;	
 			}
+		}
+		// If has no temples, automatically can't build
+		switch(currPlayer) {
+		case 1:
+			if (remainingTemplesEnum.ONE == 0)
+				cantBuildTempleCounter = numHexagons;
+			break;
+		case 2:
+			if (remainingTemplesEnum.TWO == 0)
+				cantBuildTempleCounter = numHexagons;
+			break;
+		case 3:
+			if (remainingTemplesEnum.THREE == 0)
+				cantBuildTempleCounter = numHexagons;
+			break;
+		case 4:
+			if (remainingTemplesEnum.FOUR == 0)
+				cantBuildTempleCounter = numHexagons;
+			break;
 		}
 		if (cantBuildTempleCounter === numHexagons)
 			cantBuildCounter++;
@@ -2042,6 +2153,25 @@ function canvasApp(){
 				
 				cantExpandCounter++;	
 			}
+		}
+		// If no huts left, automatically can't expand
+		switch(currPlayer) {
+		case 1:
+			if (remainingHutsEnum.ONE == 0)
+				cantExpandCounter = numHexagons;
+			break;
+		case 2:
+			if (remainingHutsEnum.TWO == 0)
+				cantExpandCounter = numHexagons;
+			break;
+		case 3:
+			if (remainingHutsEnum.THREE == 0)
+				cantExpandCounter = numHexagons;
+			break;
+		case 4:
+			if (remainingHutsEnum.FOUR == 0)
+				cantExpandCounter = numHexagons;
+			break;
 		}
 		if (cantExpandCounter === numHexagons)
 			cantBuildCounter++;
