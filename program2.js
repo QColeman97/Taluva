@@ -49,9 +49,7 @@ const HUTS = 80;
 const TOWERS = 8;
 const TEMPLES = 12;
 
-//const TILE_NUM = 48;
-// Testing:
-const TILE_NUM = 10;
+const TILE_NUM = 48;
 const ROWS = 15;
 const TILE_ROWS = ROWS - 1;
 const COLS = 13;
