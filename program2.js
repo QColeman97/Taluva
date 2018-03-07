@@ -49,7 +49,9 @@ const HUTS = 80;
 const TOWERS = 8;
 const TEMPLES = 12;
 
-const TILE_NUM = 48;
+//const TILE_NUM = 48;
+// Testing:
+const TILE_NUM = 10;
 const ROWS = 15;
 const TILE_ROWS = ROWS - 1;
 const COLS = 13;
@@ -137,7 +139,7 @@ const terrainDist = [
 
 // Hexagon Class useful for board location info
 class HexState {
-  	constructor(row, col, level, type, rotation, player, huts, temples, towers){//, orientation){
+  	constructor(row, col, level, type, rotation, player, huts, temples, towers, selected){//, orientation){
 		this.row = row;
 		this.col = col;
 		this.level = level;
@@ -148,6 +150,7 @@ class HexState {
 		this.huts = huts;
 		this.temples = temples;
 		this.towers = towers;
+		this.selected = selected;
   	}
 }
 
@@ -1530,13 +1533,13 @@ function canvasApp(){
 					leftIndex = 0;
 					rightIndex = 2;
 				}
-				var newCenterHex = new HexState(tileRow+1, tileCol, 1, terrainDist[terrDistIndex-1][bottomIndex], tileAngle, currPlayer, 0, 0, 0);
+				var newCenterHex = new HexState(tileRow+1, tileCol, 1, terrainDist[terrDistIndex-1][bottomIndex], tileAngle, currPlayer, 0, 0, 0, false);
 				console.log("to add boardState[" + (tileRow+1) + "][" + (tileCol+Math.floor((ROWS-1)/2)) + "] = " + newCenterHex);
 				
-				var newLeftHex = new HexState(tileRow, tileCol, 1, terrainDist[terrDistIndex-1][leftIndex], tileAngle, currPlayer, 0, 0, 0);
+				var newLeftHex = new HexState(tileRow, tileCol, 1, terrainDist[terrDistIndex-1][leftIndex], tileAngle, currPlayer, 0, 0, 0, false);
 				console.log("to add boardState[" + tileRow + "][" + (tileCol+Math.floor((ROWS-1)/2)) + "] = " + newLeftHex);
 				
-				var newRightHex = new HexState(tileRow, tileCol+1, 1, terrainDist[terrDistIndex-1][rightIndex], tileAngle, currPlayer, 0, 0, 0);
+				var newRightHex = new HexState(tileRow, tileCol+1, 1, terrainDist[terrDistIndex-1][rightIndex], tileAngle, currPlayer, 0, 0, 0, false);
 				console.log("to add boardState[" + tileRow + "][" + (tileCol+1+Math.floor((ROWS-1)/2)) + "] = " + newRightHex);
 				
 			} else {
@@ -1555,13 +1558,13 @@ function canvasApp(){
 					leftIndex = 0;
 					rightIndex = 1;
 				}
-				var newCenterHex = new HexState(tileRow, tileCol+1, 1, terrainDist[terrDistIndex-1][topIndex], tileAngle, currPlayer, 0, 0, 0);
+				var newCenterHex = new HexState(tileRow, tileCol+1, 1, terrainDist[terrDistIndex-1][topIndex], tileAngle, currPlayer, 0, 0, 0, false);
 				console.log("to add boardState[" + tileRow + "][" + (tileCol+1+Math.floor((ROWS-1)/2)) + "] = " + newCenterHex);
 
-				var newLeftHex = new HexState(tileRow+1, tileCol, 1, terrainDist[terrDistIndex-1][leftIndex], tileAngle, currPlayer, 0, 0, 0);
+				var newLeftHex = new HexState(tileRow+1, tileCol, 1, terrainDist[terrDistIndex-1][leftIndex], tileAngle, currPlayer, 0, 0, 0, false);
 				console.log("to add boardState[" + (tileRow+1) + "][" + (tileCol+Math.floor((ROWS-1)/2)) + "] = " + newLeftHex);
 				
-				var newRightHex = new HexState(tileRow+1, tileCol+1, 1, terrainDist[terrDistIndex-1][rightIndex], tileAngle, currPlayer, 0, 0, 0);
+				var newRightHex = new HexState(tileRow+1, tileCol+1, 1, terrainDist[terrDistIndex-1][rightIndex], tileAngle, currPlayer, 0, 0, 0, false);
 				console.log("to add boardState[" + (tileRow+1) + "][" + (tileCol+1+Math.floor((ROWS-1)/2)) + "] = " + newRightHex);
 			}
 
@@ -1784,7 +1787,7 @@ function canvasApp(){
 			
 			var clickedHex = boardState[hexRow][hexCol + Math.floor((ROWS-1)/2)];
 			selectedSettlement = [];
-			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
+			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2), false);
 			//Check if valid hex at rows and cols chosen
 			if (clickedHex !== null && clickedHex.type !== SubtileTypeEnum.VOLCANO &&
 				(clickedHex.player === currPlayer || (clickedHex.huts === 0 && clickedHex.towers === 0 && 
@@ -1888,7 +1891,7 @@ function canvasApp(){
 			
 			var clickedHex = boardState[hexRow][hexCol + Math.floor((ROWS-1)/2)];
 			selectedSettlement = [];
-			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
+			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2), false);
 			//Check if valid hex at rows and cols chosen
 			if (clickedHex !== null && clickedHex.type !== SubtileTypeEnum.VOLCANO &&
 				(clickedHex.player === currPlayer || (clickedHex.huts === 0 && clickedHex.towers === 0 && 
@@ -1960,7 +1963,7 @@ function canvasApp(){
 			var hexCol = getHexCol(mouseX, mouseY, hexRow);
 			selectedSettlement = []; // filled w/ HexState
 			// Fill selectedSettlement[]
-			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2));
+			fillSelectedSettlement(hexRow, hexCol + Math.floor((ROWS-1)/2), true);
 			if (selectedSettlement.length === 0) {
 				alert("You must select a valid settlement of yours to expand upon.");
 				// STATE CHANGE
@@ -2227,7 +2230,7 @@ function canvasApp(){
 			
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow-1, stateCol);
+			fillSelectedSettlement(stateRow-1, stateCol, false);
 			if (noTowerInSettlement())
 				noTowerCounter++;
 		}
@@ -2243,7 +2246,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow-1, stateCol+1);
+			fillSelectedSettlement(stateRow-1, stateCol+1, false);
 			if (noTowerInSettlement())
 				noTowerCounter++;
 		}
@@ -2259,7 +2262,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow1, stateCol+1);
+			fillSelectedSettlement(stateRow1, stateCol+1, false);
 			if (noTowerInSettlement())
 				noTowerCounter++;
 		}
@@ -2275,7 +2278,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow+1, stateCol);
+			fillSelectedSettlement(stateRow+1, stateCol, false);
 			if (noTowerInSettlement())
 				noTowerCounter++;
 		}
@@ -2291,7 +2294,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow+1, stateCol-1);
+			fillSelectedSettlement(stateRow+1, stateCol-1, false);
 			if (noTowerInSettlement())
 				noTowerCounter++;
 		}
@@ -2307,7 +2310,7 @@ function canvasApp(){
 			
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow, stateCol-1);
+			fillSelectedSettlement(stateRow, stateCol-1, false);
 			if (noTowerInSettlement())
 				noTowerCounter++;
 		}
@@ -2335,7 +2338,7 @@ function canvasApp(){
 			
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow-1, stateCol);
+			fillSelectedSettlement(stateRow-1, stateCol, false);
 			if (noTempleInSettlement() && selectedSettlement.length >= 3)
 				noTempleAndBigEnoughCounter++;
 		}
@@ -2351,7 +2354,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow-1, stateCol+1);
+			fillSelectedSettlement(stateRow-1, stateCol+1, false);
 			if (noTempleInSettlement() && selectedSettlement.length >= 3)
 				noTempleAndBigEnoughCounter++;
 		}
@@ -2367,7 +2370,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow1, stateCol+1);
+			fillSelectedSettlement(stateRow1, stateCol+1, false);
 			if (noTempleInSettlement() && selectedSettlement.length >= 3)
 				noTempleAndBigEnoughCounter++;
 		}
@@ -2383,7 +2386,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow+1, stateCol);
+			fillSelectedSettlement(stateRow+1, stateCol, false);
 			if (noTempleInSettlement() && selectedSettlement.length >= 3)
 				noTempleAndBigEnoughCounter++;
 		}
@@ -2399,7 +2402,7 @@ function canvasApp(){
 
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow+1, stateCol-1);
+			fillSelectedSettlement(stateRow+1, stateCol-1, false);
 			if (noTempleInSettlement() && selectedSettlement.length >= 3)
 				noTempleAndBigEnoughCounter++;
 		}
@@ -2415,7 +2418,7 @@ function canvasApp(){
 			
 			settlementCounter++;
 			selectedSettlement = [];
-			fillSelectedSettlement(stateRow, stateCol-1);
+			fillSelectedSettlement(stateRow, stateCol-1, false);
 			if (noTempleInSettlement() && selectedSettlement.length >= 3)
 				noTempleAndBigEnoughCounter++;
 		}
@@ -2700,7 +2703,7 @@ function canvasApp(){
 	}
 
 	// Fills the settlement that includes the player's chosen HexState
-	function fillSelectedSettlement(stateRow, stateCol) {
+	function fillSelectedSettlement(stateRow, stateCol, isVisible) {
 		// is boardState[stateRow-1][stateCol] part of settlement?
 		try {
 			if (boardState[stateRow][stateCol].player === currPlayer &&
@@ -2721,7 +2724,7 @@ function canvasApp(){
 				boardState[stateRow-1][stateCol].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow-1][stateCol])) {
 						selectedSettlement.push(boardState[stateRow-1][stateCol]);
-						fillSelectedSettlement(stateRow-1, stateCol);
+						fillSelectedSettlement(stateRow-1, stateCol, isVisible);
 					}
 			}
 		} catch(e) {
@@ -2734,7 +2737,7 @@ function canvasApp(){
 				boardState[stateRow-1][stateCol+1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow-1][stateCol+1])) {
 						selectedSettlement.push(boardState[stateRow-1][stateCol+1]);
-						fillSelectedSettlement(stateRow-1, stateCol+1);
+						fillSelectedSettlement(stateRow-1, stateCol+1, isVisible);
 					}
 			}
 		} catch(e) {
@@ -2747,7 +2750,7 @@ function canvasApp(){
 				boardState[stateRow][stateCol+1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow][stateCol+1])) {
 						selectedSettlement.push(boardState[stateRow][stateCol+1]);
-						fillSelectedSettlement(stateRow, stateCol+1);
+						fillSelectedSettlement(stateRow, stateCol+1, isVisible);
 					}
 			} 
 		} catch(e) {
@@ -2760,7 +2763,7 @@ function canvasApp(){
 				boardState[stateRow+1][stateCol].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow+1][stateCol])) {
 						selectedSettlement.push(boardState[stateRow+1][stateCol]);
-						fillSelectedSettlement(stateRow+1, stateCol);	
+						fillSelectedSettlement(stateRow+1, stateCol, isVisible);	
 					}
 			}
 		} catch(e) {
@@ -2773,7 +2776,7 @@ function canvasApp(){
 				boardState[stateRow+1][stateCol-1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow+1][stateCol-1])) {
 						selectedSettlement.push(boardState[stateRow+1][stateCol-1]);
-						fillSelectedSettlement(stateRow+1, stateCol-1);
+						fillSelectedSettlement(stateRow+1, stateCol-1, isVisible);
 					}
 			}
 		} catch(e) {
@@ -2786,7 +2789,7 @@ function canvasApp(){
 				boardState[stateRow][stateCol-1].temples > 0)) {
 					if (!selectedSettlement.includes(boardState[stateRow][stateCol-1])) {
 						selectedSettlement.push(boardState[stateRow][stateCol-1]);
-						fillSelectedSettlement(stateRow, stateCol-1);
+						fillSelectedSettlement(stateRow, stateCol-1, isVisible);
 					}
 			}
 		} catch(e) {
