@@ -1,1 +1,2 @@
-# program-1-taluva-pass-and-play-part-1-QColeman97
+# Taluva Simulator - 2D
+Written in JavaScript using HTML5 Canvas. Runnable in common web browsers (Google Chrome, Mozilla Firefox, etc.).
