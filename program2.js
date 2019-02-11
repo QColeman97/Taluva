@@ -256,7 +256,7 @@ function canvasApp(){
 	var mouseY;
 
 	// UNMUTE FOR BACKGROUND MUSIC
-	audioElement.muted = true;
+	audioElement.muted = false;
 
 	audioElement.play();
 	audioElement.loop = true;
